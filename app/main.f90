@@ -1,13 +1,18 @@
 program main
   use:: json_module
+  use linkedList
+  use cola_module
   implicit none
-  integer :: option
+  integer :: option,id_asInt,img_g_asInt,img_p_asInt
+  integer :: windowsAmount
+  character(len=1) :: dummy_char
   !integer :: option
+  type(linked_list) :: mylista
   type(json_file) :: json
   type(json_core) :: jsonc
   type(json_value), pointer :: listPointer, animalPointer, attributePointer
   logical :: found
-  integer :: size, i
+  integer :: size, i,num_vetanilla
   character(:), allocatable :: id, nombre, img_p, img_g
     do
         call print_menu()
@@ -81,7 +86,15 @@ subroutine parametros_iniciales()
     case(1)
       call readFile()
     case(2)
-      !call windowNumber()
+      print *, "Cuantas ventanillas quieres: "
+        read*, num_vetanilla
+        print *, "----------------"
+        do i = 1, num_vetanilla
+            call mylista%agregar_lista(i)
+            print *, "ventanillas creada =>>>>>>",i
+        end do
+        call mylista%print()
+        print *, "----------------"
     case(3)
           exit
         case default
@@ -100,10 +113,12 @@ subroutine parametros_iniciales()
       print *, "3. Regresar a menu principal"
     end subroutine parameters_menu
 
+
+
     subroutine readFile()
-      
+      type(cola) :: cola_clientes
         print *, "---------------------------------------"
-        print *, "-- Carga Masiva Cliente --"
+        print *, "-- Lista Clientes --"
         call json%initialize()
         call json%load(filename='DatosPrueba.json')
         call json%info('',n_children=size)
@@ -125,18 +140,45 @@ subroutine parametros_iniciales()
             call jsonc%get_child(animalPointer, 'img_g', attributePointer, found) 
             call jsonc%get(attributePointer, img_g)
 
-            
+            read(id, *) id_asInt
+            read(img_g, *) img_g_asInt
+            read(img_p, *) img_p_asInt
 
-            print *, "----"
-            print *, 'ID: ', id
-            print *, 'Nombre: ', nombre
-            print *, 'img_p: ', img_p
-            print *, 'img_g: ', img_g
+            call cola_clientes%push(id_asInt, trim(nombre), img_g_asInt, img_p_asInt)
 
-            
-
+            ! print *, "------------------"
+            ! print *, 'ID: ', id
+            ! print *, 'Nombre: ', nombre
+            ! print *, 'img_p: ', img_p
+            ! print *, 'img_g: ', img_g
         end do
+        call cola_clientes%print
         call json%destroy()
     end subroutine readFile
+
+
+  !   subroutine windowNumber()
+  !         type(linked_list) :: windowsList
+          
+  
+  !         print *, ">> Ingrese el numero de ventanillas disponibles:"
+  !         read(*, *) windowsAmount
+  
+  !         ! Inicializar la lista de ventanillas
+  !         call init_linked_list(windowsList)
+  
+  !         ! Agregar nodos a la lista para representar las ventanillas
+  !         do i = 1, windowsAmount
+  !             call push(windowsList, i)
+  !         end do
+  
+  !         ! Mostrar las ventanillas creadas
+  !         print *, "Ventanillas creadas exitosamente:"
+  !         call print(windowsList)
+  
+  !         ! Esperar a que el usuario presione cualquier tecla antes de volver al menú
+  !         print *, "Presione cualquier tecla para volver al menu..."
+  !         read(*,*) dummy_char
+  ! end subroutine windowNumber
 
 end program main
