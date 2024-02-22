@@ -2,17 +2,22 @@ program main
   use:: json_module
   use linkedList
   use cola_module
+  use ventanillasDisponibles
   implicit none
-  integer :: option,id_asInt,img_g_asInt,img_p_asInt
+  integer :: option,id_asInt,img_g_asInt,img_p_asInt, contador_pasos
   integer :: windowsAmount
   character(len=1) :: dummy_char
+  
   !integer :: option
   type(linked_list) :: mylista
+  type(ventanilla_clientes) :: lista_ventanillasClientes
+  type(cola) :: cola_clientes
   type(json_file) :: json
   type(json_core) :: jsonc
   type(json_value), pointer :: listPointer, animalPointer, attributePointer
+
   logical :: found
-  integer :: size, i,num_vetanilla
+  integer :: size, i,cantidad_ventanillas
   character(:), allocatable :: id, nombre, img_p, img_g
     do
         call print_menu()
@@ -21,8 +26,9 @@ program main
         select case(option)
         case(1)
             call parametros_iniciales()
-        ! case(2)
-        !     call carga_masiva_clientes()
+        case(2)
+          print *, "Se encuentra en pasos"
+            call pasos()
         ! case(3)
         !     call cantidad_ventanillas()
         ! case(4)
@@ -37,30 +43,30 @@ program main
     end do
 
   contains
-  subroutine initial_menu()
-    do
-        call print_menu()
-        read(*, *) option
+!   subroutine initial_menu()
+!     do
+!         call print_menu()
+!         read(*, *) option
         
-        select case(option)
-        case(1)
-          call parametros_iniciales()
-          ! case(2)
-          !     call carga_masiva_clientes()
-          ! case(3)
-          !     call cantidad_ventanillas()
-          ! case(4)
-          !     call ejecutar_paso()
-        ! case(5)
-        !     call estado_memoria_estructuras()
-        case(6)
-          exit
-        case default
-          print *, "Error!. Por favor seleccione una opcion valida."
-        end select
-    end do
+!         select case(option)
+!         case(1)
+!           call parametros_iniciales()
+!           ! case(2)
+!           !     call carga_masiva_clientes()
+!           ! case(3)
+!           !     call cantidad_ventanillas()
+!           ! case(4)
+!           !     call ejecutar_paso()
+!         ! case(5)
+!         !     call estado_memoria_estructuras()
+!         case(6)
+!           exit
+!         case default
+!           print *, "Error!. Por favor seleccione una opcion valida."
+!         end select
+!     end do
 
-end subroutine initial_menu
+! end subroutine initial_menu
 
 subroutine print_menu()
   print *, "...................................."
@@ -86,19 +92,19 @@ subroutine parametros_iniciales()
     case(1)
       call readFile()
     case(2)
-      print *, "Cuantas ventanillas quieres: "
-        read*, num_vetanilla
+      print *, "Ingrese el numero de ventanillas deseadas: "
+        read*, cantidad_ventanillas
         print *, "----------------"
-        do i = 1, num_vetanilla
+        do i = 1, cantidad_ventanillas
             call mylista%agregar_lista(i)
-            print *, "ventanillas creada =>>>>>>",i
+            ! print *, "ventanillas creada =>>>>>>",i
         end do
         call mylista%print()
         print *, "----------------"
     case(3)
           exit
         case default
-          print *, "Error!. Por favor seleccione una opcion valida."
+          print *, "Error!. Seleccione una opcion valida."
         end select
       end do
     end subroutine parametros_iniciales
@@ -111,12 +117,13 @@ subroutine parametros_iniciales()
       print *, "1. Carga masiva de clientes"
       print *, "2. Cantidad de ventanillas"
       print *, "3. Regresar a menu principal"
+      print *, "...................................."
     end subroutine parameters_menu
 
 
 
     subroutine readFile()
-      type(cola) :: cola_clientes
+      
         print *, "---------------------------------------"
         print *, "-- Lista Clientes --"
         call json%initialize()
@@ -156,6 +163,55 @@ subroutine parametros_iniciales()
         call json%destroy()
     end subroutine readFile
 
+    subroutine pasos()
+      contador_pasos = 0
+      do
+        call menuTemp()
+        read(*, *) option
+  
+        select case(option)
+        case(1)
+            contador_pasos  = contador_pasos + 1
+            call pasoUno()
+            
+            print *, contador_pasos
+        ! case(2)s
+        !     call pasos()
+        ! case(3)
+        !     call cantidad_ventanillas()
+        ! case(4)
+        !     call ejecutar_paso()
+        ! case(5)
+        !     call estado_memoria_estructuras()
+        case(6)
+            exit
+        case default
+            print *, "Error!. Por favor seleccione una opcion valida."
+        end select
+    end do
+
+    end subroutine pasos
+
+    subroutine menuTemp()
+      print *, "...................................."
+      print *, "         Seleccione una opcion            "
+      print *, "...................................."
+      print *, "1. paso Uno"
+      print *, "...................................."
+    end subroutine menuTemp
+
+
+
+
+
+    subroutine pasoUno()
+      integer :: id_ventanillaActual,id_clienteActual
+      id_ventanillaActual = mylista%getIndiceVentanilla()
+      id_clienteActual = cola_clientes%getIndiceCliente()
+      call lista_ventanillasClientes%push_ventanillaClientes(id_ventanillaActual,id_clienteActual)
+      call lista_ventanillasClientes%print_ventanillaClientes()
+
+    end subroutine pasoUno
 
   !   subroutine windowNumber()
   !         type(linked_list) :: windowsList
