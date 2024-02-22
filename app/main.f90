@@ -2,15 +2,14 @@ program main
   use:: json_module
   use linkedList
   use cola_module
-  use ventanillasDisponibles
+  
   implicit none
-  integer :: option,id_asInt,img_g_asInt,img_p_asInt, contador_pasos
+  integer :: option,id_asInt,img_g_asInt,img_p_asInt, contador_pasos,total_img
   integer :: windowsAmount
   character(len=1) :: dummy_char
   
   !integer :: option
   type(linked_list) :: mylista
-  type(ventanilla_clientes) :: lista_ventanillasClientes
   type(cola) :: cola_clientes
   type(json_file) :: json
   type(json_core) :: jsonc
@@ -96,10 +95,10 @@ subroutine parametros_iniciales()
         read*, cantidad_ventanillas
         print *, "----------------"
         do i = 1, cantidad_ventanillas
-            call mylista%agregar_lista(i)
+            call mylista%agregar_lista(i,0,.true.,0)
             ! print *, "ventanillas creada =>>>>>>",i
         end do
-        call mylista%print()
+        call mylista%print_ventanillas()
         print *, "----------------"
     case(3)
           exit
@@ -150,8 +149,9 @@ subroutine parametros_iniciales()
             read(id, *) id_asInt
             read(img_g, *) img_g_asInt
             read(img_p, *) img_p_asInt
+            total_img = img_g_asInt + img_p_asInt
 
-            call cola_clientes%push(id_asInt, trim(nombre), img_g_asInt, img_p_asInt)
+            call cola_clientes%push(id_asInt, trim(nombre), img_g_asInt, img_p_asInt,total_img)
 
             ! print *, "------------------"
             ! print *, 'ID: ', id
@@ -208,33 +208,24 @@ subroutine parametros_iniciales()
       integer :: id_ventanillaActual,id_clienteActual
       id_ventanillaActual = mylista%getIndiceVentanilla()
       id_clienteActual = cola_clientes%getIndiceCliente()
-      call lista_ventanillasClientes%push_ventanillaClientes(id_ventanillaActual,id_clienteActual)
-      call lista_ventanillasClientes%print_ventanillaClientes()
+
+      if (id_ventanillaActual < 0) then
+        print *, "Error: No hay ventanillas disponibles."
+        return
+    endif
+
+    if (id_clienteActual < 0) then
+        print *, "Error: No hay clientes en la cola."
+        return
+    endif
+
+
+
+
+      call mylista%actualizar_ventanilla(id_clienteActual)
+      call mylista%print_ventanillas()
 
     end subroutine pasoUno
 
-  !   subroutine windowNumber()
-  !         type(linked_list) :: windowsList
-          
-  
-  !         print *, ">> Ingrese el numero de ventanillas disponibles:"
-  !         read(*, *) windowsAmount
-  
-  !         ! Inicializar la lista de ventanillas
-  !         call init_linked_list(windowsList)
-  
-  !         ! Agregar nodos a la lista para representar las ventanillas
-  !         do i = 1, windowsAmount
-  !             call push(windowsList, i)
-  !         end do
-  
-  !         ! Mostrar las ventanillas creadas
-  !         print *, "Ventanillas creadas exitosamente:"
-  !         call print(windowsList)
-  
-  !         ! Esperar a que el usuario presione cualquier tecla antes de volver al menú
-  !         print *, "Presione cualquier tecla para volver al menu..."
-  !         read(*,*) dummy_char
-  ! end subroutine windowNumber
 
 end program main
