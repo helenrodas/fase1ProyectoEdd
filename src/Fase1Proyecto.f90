@@ -12,19 +12,20 @@ module linkedList
       procedure :: ventanillaDisponible
       procedure :: getIndiceVentanilla
       procedure :: actualizar_ventanilla
+      procedure :: print_dot
   end type linked_list
 
   type :: node
-  integer :: id_ventanilla,id_cliente,cantidadImg_pila
+  integer :: id_ventanilla,id_cliente,cantidadImg_pila,cantidadImg_pequena,cantidadImg_grande
   logical :: estado
   type(node), pointer :: next
   end type node
 
   contains
 
-  subroutine agregar_lista(self, id_ventanilla,id_cliente,estado,cantidadImg_pila)
+  subroutine agregar_lista(self, id_ventanilla,id_cliente,estado,cantidadImg_pila,cantidadImg_pequena,cantidadImg_grande)
       class(linked_list), intent(inout) :: self
-      integer, intent(in) :: id_ventanilla,id_cliente,cantidadImg_pila
+      integer, intent(in) :: id_ventanilla,id_cliente,cantidadImg_pila,cantidadImg_pequena,cantidadImg_grande
       logical, intent(in) :: estado
 
     
@@ -36,6 +37,8 @@ module linkedList
       newNode%id_cliente = id_cliente
       newNode%estado = estado
       newNode%cantidadImg_pila = cantidadImg_pila
+      newNode%cantidadImg_pequena=cantidadImg_pequena
+      newNode%cantidadImg_grande=cantidadImg_grande
       newNode%next => null()
   
       ! Si la lista está vacía, el nuevo nodo se convierte en la cabeza de la lista
@@ -109,6 +112,8 @@ module linkedList
         else
             print *, "Estado Ventanilla: Ocupado "
         end if
+        print *, "Imagenes pequenas por procesar: ",current%cantidadImg_pequena
+        print *, "Imagenes grandes por procesar: ",current%cantidadImg_grande
         print *, "Imagenes en pila: ",current%cantidadImg_pila
         print *, "------------------------"
           current => current%next
@@ -167,9 +172,9 @@ end function getIndiceVentanilla
 
 
 
-subroutine actualizar_ventanilla(self, id_Cliente)
+subroutine actualizar_ventanilla(self, id_Cliente,cantidad_pequenas,cantidad_grandes)
     class(linked_list), intent(inout) :: self
-    integer, intent(in) :: id_Cliente
+    integer, intent(in) :: id_Cliente,cantidad_pequenas,cantidad_grandes
     type(node), pointer :: current
     type(node), pointer :: lastNodeReturned 
 
@@ -190,6 +195,9 @@ subroutine actualizar_ventanilla(self, id_Cliente)
         if (current%estado) then
             current%id_Cliente = id_Cliente
             current%estado = .false.
+            current%cantidadImg_pequena = cantidad_pequenas
+            current%cantidadImg_grande = cantidad_grandes
+
             exit
         else
             self%lastNodeReturned => current
@@ -210,6 +218,53 @@ end subroutine actualizar_ventanilla
       self%head => null()
   end subroutine init_linked_list
 
+
+  subroutine print_dot(self, filename)
+    class(linked_list), intent(inout) :: self ! referencia a la lista
+    character(len=*), intent(in) :: filename ! nombre del archivo
+    class(node), pointer :: current ! puntero al nodo actual
+    integer :: id_ventana ! id del nodo
+
+    ! puntero al nodo actual
+    current => self%head
+
+    ! abrir el archivo
+    open(10, file=filename, status='replace')
+
+    ! escribir el encabezado
+    write(10, '(a)') "digraph G {" ! encabezado del archivo dot
+    write(10, '(a)') "  node [shape=circle];"  ! forma de los nodos
+    write(10, '(a)') "  rankdir=TB" ! orientación del grafo
+
+    if ( .not. associated(current))  then ! si la lista está vacía
+        write(10, '(a)') "  EmptyList;" ! escribir un nodo que diga que la lista está vacía
+    else ! si la lista no está vacía
+        ! escribir la arista de la cabeza al primer nodo
+        ! escribir la arista de la cola al último nodo
+
+        do ! recorrer la lista
+            if (.not. associated(current)) exit ! si no hay más nodos, salir del bucle
+            id_ventana = current%id_ventanilla
+            ! crear el nodo
+            write(10, '(a, i0, a, i0, a)') '  Node', id_ventana, ' [label="ventanilla= ', id_ventana, '"];'
+            ! escribir las aristas
+            if (associated(current%next)) then
+                write(10, '(a, i0, a, i0)') '  Node', current%id_ventanilla, ' -> Node', current%next%id_ventanilla, ';' ! arista del nodo actual al siguiente nodo
+            end if
+
+            ! avanzar al siguiente nodo
+            current => current%next
+        end do
+    end if
+    ! escribir el pie del archivo
+    write(10, '(a)') "}"
+    ! cerrar el archivo
+    close(10)
+end subroutine print_dot
+
+
+
+
 end module linkedList
 
 module cola_module
@@ -222,6 +277,10 @@ module cola_module
       procedure :: push
       procedure :: print
       procedure :: getIndiceCliente
+      procedure :: getImgPequenas
+      procedure :: getImgGrande
+      procedure :: eliminar_nodo
+    !   procedure :: print_dotClientes
       ! Agregamos los procedimientos restantes de la cola
   end type cola
 
@@ -313,76 +372,199 @@ module cola_module
     end if
 end function getIndiceCliente
 
+function getImgPequenas(self) result(cantidad)
+    class(cola), intent(inout) :: self
+    type(node), pointer :: current
+    type(node), pointer :: lastNodeReturned => null()
+    integer :: cantidad
+    
+    ! Si es la primera llamada o no hay un último nodo devuelto, comenzar desde la cabeza
+    if (.not. associated(lastNodeReturned)) then
+        current => self%head
+    else
+        current => lastNodeReturned%next
+    end if
 
-end module cola_module
+    ! Si no hay nodo actual, significa que se ha alcanzado el final de la lista
+    if (.not. associated(current)) then
+        cantidad = -1   ! Retorna -1 para indicar que no hay más índices
+        !print *,"No hay clientes"
+    else
+        ! Obtiene el valor del nodo actual y establece lastNodeReturned en el nodo actual
+        cantidad = current%img_p   
+        lastNodeReturned => current
+    end if
+end function getImgPequenas
+
+function getImgGrande(self) result(cantidad)
+    class(cola), intent(inout) :: self
+    type(node), pointer :: current
+    type(node), pointer :: lastNodeReturned => null()
+    integer :: cantidad
+    
+    ! Si es la primera llamada o no hay un último nodo devuelto, comenzar desde la cabeza
+    if (.not. associated(lastNodeReturned)) then
+        current => self%head
+    else
+        current => lastNodeReturned%next
+    end if
+
+    ! Si no hay nodo actual, significa que se ha alcanzado el final de la lista
+    if (.not. associated(current)) then
+        cantidad = -1   ! Retorna -1 para indicar que no hay más índices
+        !print *,"No hay clientes"
+    else
+        ! Obtiene el valor del nodo actual y establece lastNodeReturned en el nodo actual
+        cantidad = current%img_g   
+        lastNodeReturned => current
+    end if
+end function getImgGrande
+
+
+subroutine eliminar_nodo(self, id)
+    class(cola), intent(inout) :: self
+    integer, intent(in) :: id
+
+    type(node), pointer :: current
+    type(node), pointer :: prev
+
+    ! Verificar si la cola está vacía
+    if (.not. associated(self%head)) then
+        print *, "Error: La cola está vacía."
+        return
+    endif
+
+    current => self%head
+    prev => self%head
+
+    do while (associated(current))
+        if (current%id == id) then
+            if (associated(prev, current)) then
+                self%head => current%next
+            else
+                prev%next => current%next
+            endif
+            deallocate(current)
+            return
+        endif
+        prev => current
+        current => current%next
+    end do
+
+    print *, "Error: Nodo con el ID ", id, " no encontrado."
+end subroutine eliminar_nodo
 
 
 
-! module ventanillasDisponibles
-!     implicit none
-    
-!     type :: ventanilla_clientes
-!     type(node), pointer :: head => null() ! head of the list
-  
-!     contains
-!         procedure :: push_ventanillaClientes
-!         procedure :: print_ventanillaClientes
-!         ! Agregamos los procedimientos restantes de la cola
-!     end type ventanilla_clientes
-  
-!     type :: node
-!         integer :: id_ventanilla, id_cliente
-!         type(node), pointer :: next
-!     end type node
-  
-!     contains
+! subroutine print_dotClientes(self, filename)
+!     class(cola), intent(inout) :: self ! referencia a la lista
+!     character(len=*), intent(in) :: filename ! nombre del archivo
+!     class(node), pointer :: current, previous ! puntero al nodo actual
+!     integer :: idNodo,idCliente, imagenGrande, imagenPequena  ! id del nodo
+!     character(len=:), allocatable :: nombreCliente, idAsString, grandeAsString, pequenaAsString, idNodoAsString, anteriorAsString
 
-   
-  
-!     subroutine push_ventanillaClientes(self, id_ventanilla,id_cliente)
-!         class(ventanilla_clientes), intent(inout) :: self
-!         integer, intent(in) :: id_ventanilla,id_cliente
+!     ! puntero al nodo actual
+!     current => self%head
+!     previous => null()
     
-!         type(node), pointer :: current, newNode
-    
-!         ! Crear un nuevo nodo
-!         allocate(newNode)
-!         newNode%id_ventanilla = id_ventanilla
-!         newNode%id_cliente = id_cliente
-!         newNode%next => null()
-    
-!         ! Si la lista está vacía, el nuevo nodo se convierte en la cabeza de la lista
-!         if (.not. associated(self%head)) then
-!             self%head => newNode
-!         else
-!             ! Encontrar el último nodo de la lista
-!             current => self%head
-!             do while (associated(current%next))
-!                 current => current%next
-!             end do
-    
-!             ! Insertar el nuevo nodo al final de la lista
-!             current%next => newNode
-!         end if
-    
-!         !print *, 'pushed:: ', id,nombre,img_g,img_p
-!     end subroutine push_ventanillaClientes
-  
-  
-!     subroutine print_ventanillaClientes(self)
-!         class(ventanilla_clientes), intent(in) :: self
-    
-!         type(node), pointer :: current
-    
+!     ! abrir el archivo
+!     open(10, file=filename, status='replace', action='write')
+
+!     ! escribir el encabezado
+!     write(10, *) "digraph G {" ! encabezado del archivo dot
+!     write(10, *) "  node [shape=circle];"  ! forma de los nodos
+!     write(10, *) "  rankdir=LR;" ! orientación del grafo
+
+!     if (.not. associated(current)) then ! si la lista está vacía
+!         write(10, *) "  EmptyList;" ! escribir un nodo que diga que la lista está vacía
+!     else ! si la lista no está vacía
+!         ! escribir la arista de la cabeza al primer nodo
+!         ! escribir la arista de la cola al último nodo
+!         idNodo = 0
+!         do ! recorrer la lista
+!             if (.not. associated(current)) exit ! si no hay más nodos, salir del bucle
+!             idCliente = current%id
+!             nombreCliente = current%nombre
+!             imagenGrande = current%img_g
+!             imagenPequena = current%img_p
+
+!             write(idNodoAsString, '(I10)') idNodo
+!             write(idAsString, '(I10)') idCliente
+!             write(grandeAsString, '(I10)') imagenGrande
+!             write(pequenaAsString, '(I10)') imagenPequena
+
+!             ! Escribir la información del nodo
+!             write(10, '(a, a, a, a, a, a, a, a, a, a)') &
+!                 'node', trim(adjustl(idNodoAsString)), ' [label="Cliente:', trim(adjustl(nombreCliente)), &
+!                 '\nId=', trim(adjustl(idAsString)), '\nImagen Grande=', trim(adjustl(grandeAsString)), &
+!                 '\nImagen Pequena=', trim(adjustl(pequenaAsString)), '"];'
+
+!             ! escribir las aristas
+!             if (associated(previous)) then
+!                 write(anteriorAsString, '(I10)') (idNodo - 1)
+!                 write(10, *) 'node'// trim(adjustl(anteriorAsString))//'-> node'//trim(adjustl(idNodoAsString))//'[dir="forward"];'
+!             end if
+
+!             ! avanzar al siguiente nodo
+!             previous => current
+!             current => current%next
+!             idNodo = idNodo + 1
+!         end do
+!     end if
+!     ! escribir el pie del archivo
+!     write(10, *) "}"
+!     ! cerrar el archivo
+!     close(10)
+! end subroutine print_dotClientes
+
+! subroutine print_dotClientes(self, filename)
+!     class(cola), intent(in) :: self
+!     character(len=*), intent(in) :: filename
+
+!     type(node), pointer :: current
+!     integer :: id_counter
+
+!     ! Abrir el archivo
+!     open(10, file=filename, status='replace')
+
+!     ! Escribir el encabezado
+!     write(10, '(a)') "digraph G {" ! Encabezado del archivo DOT
+!     write(10, '(a)') "  node [shape=record];" ! Forma de los nodos (en este caso, registros)
+!     write(10, '(a)') "  rankdir=LR" ! Orientación del grafo (de arriba hacia abajo)
+
+!     if (.not. associated(self%head)) then ! Si la cola está vacía
+!         write(10, '(a)') "  EmptyQueue;" ! Escribir un nodo que indique que la cola está vacía
+!     else ! Si la cola no está vacía
 !         current => self%head
-    
-!         ! Recorre la lista y imprime los valores
+!         id_counter = 0
+
+!         ! Escribir el encabezado del subgrafo
+!         write(10, '(a)') "  subgraph cluster_cola {"
+!         write(10, '(a)') "    label = ""Cola de Recepción"";"
+
+
+!         ! Recorrer la cola y escribir los nodos y las aristas
 !         do while (associated(current))
-!             print *, "id Ventanilla: ", current%id_ventanilla
-!             print *, "id Cliente: ",current%id_cliente
+!             id_counter = id_counter + 1
+!             ! Escribir el nodo                                  [label="ventanilla= ', value, '"];
+!             write(10, '(a, i0, a, i0, a)') '  Node', id_counter, ' [label="Cliente= ', current%id, '"];' 
+!             ! Escribir la arista
+!             if (associated(current%next)) then
+!                 write(10, '(a, i0, a, i0)') '    Node', id_counter, ' -> Node', id_counter+1, ';'
+!             end if
 !             current => current%next
 !         end do
 
-!     end subroutine print_ventanillaClientes
+!         ! Escribir el pie del subgrafo
+!         write(10, '(a)') "  }"
+!     end if
 
-!   end module ventanillasDisponibles
+!     ! Escribir el pie del archivo
+!     write(10, '(a)') "}"
+!     ! Cerrar el archivo
+!     close(10)
+! end subroutine print_dotClientes
+
+
+end module cola_module
+

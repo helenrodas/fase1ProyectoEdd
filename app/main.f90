@@ -30,8 +30,8 @@ program main
             call pasos()
         ! case(3)
         !     call cantidad_ventanillas()
-        ! case(4)
-        !     call ejecutar_paso()
+        case(4)
+            call reportes()
         ! case(5)
         !     call estado_memoria_estructuras()
         case(6)
@@ -42,30 +42,6 @@ program main
     end do
 
   contains
-!   subroutine initial_menu()
-!     do
-!         call print_menu()
-!         read(*, *) option
-        
-!         select case(option)
-!         case(1)
-!           call parametros_iniciales()
-!           ! case(2)
-!           !     call carga_masiva_clientes()
-!           ! case(3)
-!           !     call cantidad_ventanillas()
-!           ! case(4)
-!           !     call ejecutar_paso()
-!         ! case(5)
-!         !     call estado_memoria_estructuras()
-!         case(6)
-!           exit
-!         case default
-!           print *, "Error!. Por favor seleccione una opcion valida."
-!         end select
-!     end do
-
-! end subroutine initial_menu
 
 subroutine print_menu()
   print *, "...................................."
@@ -95,7 +71,7 @@ subroutine parametros_iniciales()
         read*, cantidad_ventanillas
         print *, "----------------"
         do i = 1, cantidad_ventanillas
-            call mylista%agregar_lista(i,0,.true.,0)
+            call mylista%agregar_lista(i,0,.true.,0,0,0)
             ! print *, "ventanillas creada =>>>>>>",i
         end do
         call mylista%print_ventanillas()
@@ -119,6 +95,11 @@ subroutine parametros_iniciales()
       print *, "...................................."
     end subroutine parameters_menu
 
+
+    subroutine reportes()
+      call mylista%print_dot("listaVentanillas")
+      ! call cola_clientes%print_dotClientes("listaClientes")
+    end subroutine reportes
 
 
     subroutine readFile()
@@ -205,9 +186,12 @@ subroutine parametros_iniciales()
 
 
     subroutine pasoUno()
-      integer :: id_ventanillaActual,id_clienteActual
+      integer :: id_ventanillaActual,id_clienteActual,img_pequenas,img_grandes
       id_ventanillaActual = mylista%getIndiceVentanilla()
       id_clienteActual = cola_clientes%getIndiceCliente()
+      img_pequenas = cola_clientes%getImgPequenas()
+      img_grandes = cola_clientes%getImgGrande()
+
 
       if (id_ventanillaActual < 0) then
         print *, "Error: No hay ventanillas disponibles."
@@ -219,11 +203,18 @@ subroutine parametros_iniciales()
         return
     endif
 
+    if (img_pequenas < 0) then
+      print *, "Ya no hay imagenes pequenas por procesar"
+      return
+  endif
 
 
 
-      call mylista%actualizar_ventanilla(id_clienteActual)
+
+      call mylista%actualizar_ventanilla(id_clienteActual,img_pequenas,img_grandes)
+      call cola_clientes%eliminar_nodo(id_clienteActual)
       call mylista%print_ventanillas()
+      call cola_clientes%print()
 
     end subroutine pasoUno
 

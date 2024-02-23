@@ -1,0 +1,11 @@
+digraph G {
+  node [shape=circle];
+  rankdir=TB
+  Node1 [label="ventanilla= 1"];
+  Node1 -> Node2
+;
+  Node2 [label="ventanilla= 2"];
+  Node2 -> Node3
+;
+  Node3 [label="ventanilla= 3"];
+}

@@ -1,0 +1,5 @@
+digraph G {
+  node [shape=record];
+  rankdir=LR
+  subgraph cluster_cola {
+    label = "Cola de Recepción";
