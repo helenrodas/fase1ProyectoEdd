@@ -1,0 +1,9 @@
+ digraph G {
+   node [shape=record];
+   rankdir=LR
+ "nodo    0"[label="{ |{ID:            1 \n Nombre: Andres Lopez\n IMG_G:            3 \n IMG_P:            2 }| }", fillcolor=white, style=filled];
+ "nodo    1"[label="{ |{ID:            2 \n Nombre: Juan Perez\n IMG_G:            3 \n IMG_P:            0 }| }", fillcolor=white, style=filled];
+ "nodo    2"[label="{ |{ID:            3 \n Nombre: Luis Higueros\n IMG_G:            2 \n IMG_P:            1 }| }", fillcolor=white, style=filled];
+ "nodo    0"->"nodo    1"->"nodo    2"
+ rankdir = LR
+ }

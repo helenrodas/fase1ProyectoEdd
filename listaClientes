@@ -2,4 +2,13 @@ digraph G {
   node [shape=record];
   rankdir=LR
   subgraph cluster_cola {
-    label = "Cola de Recepción";
+    label = "Cola de Recepcion";
+  Node1 [label="Cliente= 1"];
+    Node1 -> Node2
+;
+  Node2 [label="Cliente= 2"];
+    Node2 -> Node3
+;
+  Node3 [label="Cliente= 3"];
+  }
+}

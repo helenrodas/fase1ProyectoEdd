@@ -2,15 +2,17 @@ program main
   use:: json_module
   use linkedList
   use cola_module
+  use pila_module
   
   implicit none
-  integer :: option,id_asInt,img_g_asInt,img_p_asInt, contador_pasos,total_img
+  integer :: option,id_asInt,img_g_asInt,img_p_asInt, contador_pasos,total_img,io
   integer :: windowsAmount
   character(len=1) :: dummy_char
   
   !integer :: option
   type(linked_list) :: mylista
   type(cola) :: cola_clientes
+  type(pila) :: pila_imagenes
   type(json_file) :: json
   type(json_core) :: jsonc
   type(json_value), pointer :: listPointer, animalPointer, attributePointer
@@ -18,6 +20,7 @@ program main
   logical :: found
   integer :: size, i,cantidad_ventanillas
   character(:), allocatable :: id, nombre, img_p, img_g
+  io = 1
     do
         call print_menu()
         read(*, *) option
@@ -98,7 +101,7 @@ subroutine parametros_iniciales()
 
     subroutine reportes()
       call mylista%print_dot("listaVentanillas")
-      ! call cola_clientes%print_dotClientes("listaClientes")
+      call cola_clientes%clientes_dot(io)
     end subroutine reportes
 
 
@@ -186,11 +189,12 @@ subroutine parametros_iniciales()
 
 
     subroutine pasoUno()
-      integer :: id_ventanillaActual,id_clienteActual,img_pequenas,img_grandes
+      integer :: id_ventanillaActual,id_clienteActual,img_pequenas,img_grandes,sizepila
       id_ventanillaActual = mylista%getIndiceVentanilla()
       id_clienteActual = cola_clientes%getIndiceCliente()
       img_pequenas = cola_clientes%getImgPequenas()
       img_grandes = cola_clientes%getImgGrande()
+      sizepila = pila_imagenes%tamano_pila()
 
 
       if (id_ventanillaActual < 0) then
@@ -208,13 +212,20 @@ subroutine parametros_iniciales()
       return
   endif
 
+    if (img_grandes > 0) then
+      call pila_imagenes%agregar_imagen("img_grande")
+      img_grandes = img_grandes - 1
+    else if(img_pequenas > 0)then
+      call pila_imagenes%agregar_imagen("img_pequena")
+      img_pequenas = img_pequenas - 1
+    end if
 
-
-
-      call mylista%actualizar_ventanilla(id_clienteActual,img_pequenas,img_grandes)
+      call mylista%actualizar_ventanilla(id_clienteActual,img_pequenas,img_grandes,sizepila)
       call cola_clientes%eliminar_nodo(id_clienteActual)
       call mylista%print_ventanillas()
-      call cola_clientes%print()
+      call pila_imagenes%printPila()
+    
+      ! call cola_clientes%print()
 
     end subroutine pasoUno
 
