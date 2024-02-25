@@ -1,0 +1,11 @@
+ digraph G {
+   node [shape=record];
+   rankdir=TB
+ "nodo    0"[label="{ |{ID:            1 \n Nombre: Andres Lopez\n IMG_G:            5 \n IMG_P:            1 }| }", fillcolor=white, style=filled];
+ "nodo    1"[label="{ |{ID:            1 \n Nombre: Andres Lopez\n IMG_G:            5 \n IMG_P:            1 }| }", fillcolor=white, style=filled];
+ "nodo    2"[label="{ |{ID:            3 \n Nombre: dude Lopez\n IMG_G:           10 \n IMG_P:            2 }| }", fillcolor=white, style=filled];
+ "nodo    3"[label="{ |{ID:            6 \n Nombre: due Lopez\n IMG_G:            2 \n IMG_P:            2 }| }", fillcolor=white, style=filled];
+ "nodo    4"[label="{ |{ID:            4 \n Nombre: helen Lopez\n IMG_G:            8 \n IMG_P:            3 }| }", fillcolor=white, style=filled];
+ 
+ rankdir = LR
+ }

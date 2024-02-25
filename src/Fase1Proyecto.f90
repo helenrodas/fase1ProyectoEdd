@@ -370,6 +370,8 @@ module cola_module
         procedure :: getImgGrande
         procedure :: eliminar_nodo
         procedure :: clientes_dot
+        procedure :: orden_imagenPequena
+        procedure :: topImgPequena_dot
       ! Agregamos los procedimientos restantes de la cola
   end type cola
 
@@ -382,7 +384,132 @@ module cola_module
       type(node), pointer :: next
   end type node
 
+!   type :: nodeP
+!         integer :: id
+!         character(len=:),allocatable :: nombre
+!         integer :: img_g
+!         integer :: img_p
+!         type(nodeP),pointer :: next
+!     end type nodeP
+
   contains
+
+  subroutine orden_imagenPequena(self, id, nombre, img_g, img_p)
+    class(cola), intent(inout) :: self
+    integer, intent(in) :: id, img_g, img_p
+    character(len=*), intent(in) :: nombre
+    
+    type(node), pointer :: current, newNode, prev
+    
+    ! Crear un nuevo nodo
+    allocate(newNode)
+    newNode%id = id
+    newNode%nombre = nombre
+    newNode%img_g = img_g
+    newNode%img_p = img_p
+    newNode%next => null()
+    
+    if (.not. associated(self%head)) then
+        ! La cola está vacía, insertar el nuevo nodo como cabeza
+        self%head => newNode
+    else
+        ! La cola no está vacía, encontrar la posición de inserción
+        prev => null()
+        current => self%head
+        
+        do while (associated(current))
+            if (img_p < current%img_p) then
+                ! Insertar antes del nodo actual
+                newNode%next => current
+                if (associated(prev)) then
+                    prev%next => newNode
+                else
+                    ! Nuevo nodo es la nueva cabeza de la cola
+                    self%head => newNode
+                end if
+                return
+            else if (img_p == current%img_p) then
+                ! Si las imágenes pequeñas son iguales, verificar imágenes grandes
+                if (img_g > current%img_g) then
+                    ! Insertar antes del nodo actual
+                    newNode%next => current
+                    if (associated(prev)) then
+                        prev%next => newNode
+                    else
+                        ! Nuevo nodo es la nueva cabeza de la cola
+                        self%head => newNode
+                    end if
+                    return
+                end if
+            end if
+            
+            prev => current
+            current => current%next
+        end do
+        
+        ! Llegamos al final de la cola, insertar el nuevo nodo al final
+        prev%next => newNode
+    end if
+end subroutine orden_imagenPequena
+
+
+subroutine topImgPequena_dot(self, io)
+    class(cola), intent(in) :: self
+    integer, intent(out) :: io
+    character(len=100) :: command
+    character(len=8) :: name
+    character(len=:), allocatable :: firsts
+    character(len=:), allocatable :: connections
+    type(node), pointer :: current
+    integer :: id_counter, index, i,count
+
+    current => self%head
+    command = "dot -Tpng ./TopImgPequena.dot -o ./TopImgPequena.png"
+    io = 1
+    index = 0
+
+    connections = ""
+    firsts = ""
+
+    open(newunit=io, file='./TopImgPequena.dot')
+    write(io, *) "digraph G {"
+    write(io, *) "  node [shape=record];"
+    write(io, *) "  rankdir=TB"
+
+    if (.not. associated(self%head)) then
+        write(io, *) "  EmptyQueue;"
+    else
+        do while (associated(current) .and. count < 5)
+            write(name, '(I5)') index
+
+            write(io, *) '"nodo'//trim(name)//'"[label="{ |{', 'ID: ', current%id, &
+                    '\n Nombre: ', current%nombre,'\n IMG_G: ', current%img_g,'\n IMG_P: ', &
+                    current%img_p, '}| }", fillcolor=white, style=filled];'
+
+
+            current => current%next
+            index = index + 1
+            count = count + 1
+        end do
+    end if
+
+    write(io, *) connections
+    write(io, *) "rankdir = LR"
+    write(io, *) "}"
+    
+    close(io)
+
+    call execute_command_line(command, exitstat=i)
+
+    if (i == 1) then
+        print *, "Ocurrió un error"
+    else
+        print *, "Imagen generada satisfactoriamente"
+    end if
+
+end subroutine topImgPequena_dot
+
+
 
   subroutine push(self, id,nombre,img_g,img_p,total_imagenes)
       class(cola), intent(inout) :: self
