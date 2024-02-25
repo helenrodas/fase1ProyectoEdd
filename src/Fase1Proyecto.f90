@@ -1,9 +1,12 @@
 module linkedList
-    !use pila_module 
+    !use linkedList
+    use pila_module 
     implicit none
+    private
 
-    type :: linked_list
+    type, public :: linked_list
         type(node), pointer :: head => null() ! head of the list
+        type(node), pointer :: tail => null()
         type(node), pointer :: lastNodeReturned => null()
 
         contains
@@ -14,16 +17,96 @@ module linkedList
             procedure :: getIndiceVentanilla
             procedure :: actualizar_ventanilla
             procedure :: print_dot
+            procedure :: printVent
+            procedure :: insert
     end type linked_list
+
 
     type :: node
         !type(pila) :: pila_img
+        integer :: index
         integer :: id_ventanilla, id_cliente, cantidadImg_pila, cantidadImg_pequena, cantidadImg_grande
         logical :: estado
-        type(node), pointer :: next
+        !type(node), pointer :: next
+        type(node), pointer :: next => null()
+        type(node), pointer :: prev => null()
+        type(pila) :: pila_img
     end type node
 
 contains
+
+
+subroutine insert(self,id_ventanilla, tipo_img)
+    class(linked_list), intent(inout) :: self
+    integer, intent(in) :: id_ventanilla
+    character(len=*), intent(in) :: tipo_img
+
+    type(node), pointer :: aux
+    type(node), pointer :: new
+    allocate(new)
+
+    if(.not. associated(self%head)) then
+        allocate(aux)
+        aux%id_ventanilla = id_ventanilla
+        self%head => aux
+        self%tail => aux
+        call aux%pila_img%append(tipo_img)
+    else
+        if(id_ventanilla < self%head%id_ventanilla) then
+            self%head%prev => new
+            new%next => self%head
+            self%head => new
+
+            new%id_ventanilla = id_ventanilla
+            call new%pila_img%append(tipo_img)
+        else
+            aux => self%head
+            do while (associated(aux%next))
+                if(id_ventanilla < aux%next%id_ventanilla) then
+                    if(id_ventanilla == aux%id_ventanilla) then
+                        call aux%pila_img%append(tipo_img)
+                    else
+                        new%next => aux%next
+                        new%prev => aux
+                        aux%next%prev => new
+                        aux%next => new
+
+                        new%id_ventanilla = id_ventanilla
+                        call new%pila_img%append(tipo_img)
+                    end if
+                    return
+                end if
+                aux => aux%next
+            end do
+
+            if(id_ventanilla == aux%id_ventanilla) then
+                call aux%pila_img%append(tipo_img)
+            else
+                self%tail%next => new
+                new%prev => self%tail
+                self%tail => new
+
+                new%id_ventanilla = id_ventanilla
+                call new%pila_img%append(tipo_img)
+            end if
+        end if
+    end if
+end subroutine insert
+
+subroutine printVent(self)
+    class(linked_list) :: self
+    type(node), pointer :: aux
+
+    aux => self%head
+
+    do while(associated(aux))
+        print *, 'indice ventanilla: ', aux%id_ventanilla
+        call aux%pila_img%printPila()
+        print *, ""
+        aux => aux%next
+    end do
+end subroutine printVent
+
 
     subroutine agregar_lista(self, id_ventanilla, id_cliente, estado, cantidadImg_pila, cantidadImg_pequena, cantidadImg_grande)
         class(linked_list), intent(inout) :: self
@@ -63,7 +146,7 @@ contains
     end subroutine agregar_lista
     
 
-    subroutine delete_by_position(self, position)
+subroutine delete_by_position(self, position)
     class(linked_list), intent(inout) :: self
     integer, intent(in) :: position
     type(node), pointer :: current, previous
@@ -274,8 +357,9 @@ end module linkedList
 
 module cola_module
   implicit none
-  
-  type :: cola
+  private
+
+  type,public :: cola
   type(node), pointer :: head => null() ! head of the list
 
   contains
@@ -520,90 +604,9 @@ subroutine clientes_dot(self, io)
 
 end subroutine clientes_dot
 
-
 end module cola_module
 
-module pila_module
-    implicit none
-    
-    type :: node
-        private
-        character(len=:), allocatable :: imagen
-        type(node), pointer :: next
-    end type node
 
-    type, public :: pila
-    private
-    type(node), pointer :: head => null() ! head of the list
-  
-    contains
-        procedure :: agregar_imagen
-        procedure :: printPila
-        procedure :: init_pila
-        procedure :: tamano_pila
-        !procedure :: eliminar_nodo
-    end type pila
-  
-  
-    contains
-
-    subroutine init_pila(self,nodo)
-        class(pila), intent(inout) :: self
-        type(node), pointer :: nodo
-        
-        
-    end subroutine init_pila
-  
-    subroutine agregar_imagen(self, imagen)
-        class(pila), intent(inout) :: self
-        character(len=*), intent(in)  :: imagen
-    
-        type(node), pointer :: newNode
-    
-        ! Crear un nuevo nodo
-        allocate(newNode)
-        newNode%imagen = imagen
-        newNode%next => self%head ! El nuevo nodo apunta al nodo anterior (antiguo head)
-    
-        ! El nuevo nodo se convierte en el nuevo head de la pila
-        self%head => newNode
-    
-        !print *, 'pushed:: ', id,nombre,img_g,img_p
-    end subroutine agregar_imagen
-  
-  
-    subroutine printPila(self)
-        class(pila), intent(in) :: self
-    
-        type(node), pointer :: current
-    
-        current => self%head
-    
-        ! Recorre la lista y imprime los valores
-        do while (associated(current))
-            print *, "Imagen: ", current%imagen
-            current => current%next
-        end do
-    end subroutine printPila
-
-    function tamano_pila(self) result(tam)
-        class(pila), intent(inout) :: self
-        type(node), pointer :: current
-        integer :: tam
-        
-        ! Implementa la lógica para calcular el tamaño de la pila aquí
-        ! Por ejemplo, si la pila es una estructura enlazada, recorre la pila y cuenta los elementos
-        
-        tam = 0
-        
-        ! Aquí deberías colocar el código para recorrer la pila y contar los elementos
-        ! Por ejemplo, si la pila es una lista enlazada:
-        do while (associated(current))
-            tam = tam + 1
-            current => current%next
-        end do
-        
-    end function tamano_pila
 
 !   subroutine eliminar_nodo(self, id)
 !       class(cola), intent(inout) :: self
@@ -638,5 +641,17 @@ module pila_module
 !       print *, "Error: Nodo con el ID ", id, " no encontrado."
 !   end subroutine eliminar_nodo
 
-  end module pila_module
   
+      ! subroutine printPila(self)
+    !     class(pila), intent(in) :: self
+    
+    !     type(node), pointer :: current
+    
+    !     current => self%head
+    
+    !     ! Recorre la lista y imprime los valores
+    !     do while (associated(current))
+    !         print *, "Imagen: ", current%imagen
+    !         current => current%next
+    !     end do
+    ! end subroutine printPila

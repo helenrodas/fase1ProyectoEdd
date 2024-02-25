@@ -2,7 +2,7 @@ program main
   use:: json_module
   use linkedList
   use cola_module
-  use pila_module
+  !use pila_module
   
   implicit none
   integer :: option,id_asInt,img_g_asInt,img_p_asInt, contador_pasos,total_img,io
@@ -12,7 +12,7 @@ program main
   !integer :: option
   type(linked_list) :: mylista
   type(cola) :: cola_clientes
-  type(pila) :: pila_imagenes
+  !type(pila) :: pila_imagenes
   type(json_file) :: json
   type(json_core) :: jsonc
   type(json_value), pointer :: listPointer, animalPointer, attributePointer
@@ -75,9 +75,11 @@ subroutine parametros_iniciales()
         print *, "----------------"
         do i = 1, cantidad_ventanillas
             call mylista%agregar_lista(i,0,.true.,0,0,0)
+            call mylista%insert(i,"pendiente")
             ! print *, "ventanillas creada =>>>>>>",i
         end do
-        call mylista%print_ventanillas()
+        !call mylista%print_ventanillas()
+        call mylista%printVent()
         print *, "----------------"
     case(3)
           exit
@@ -194,7 +196,7 @@ subroutine parametros_iniciales()
       id_clienteActual = cola_clientes%getIndiceCliente()
       img_pequenas = cola_clientes%getImgPequenas()
       img_grandes = cola_clientes%getImgGrande()
-      sizepila = pila_imagenes%tamano_pila()
+      !sizepila = pila_imagenes%tamano_pila()
 
 
       if (id_ventanillaActual < 0) then
@@ -213,17 +215,17 @@ subroutine parametros_iniciales()
   endif
 
     if (img_grandes > 0) then
-      call pila_imagenes%agregar_imagen("img_grande")
+      !call pila_imagenes%agregar_imagen("img_grande")
       img_grandes = img_grandes - 1
     else if(img_pequenas > 0)then
-      call pila_imagenes%agregar_imagen("img_pequena")
+      !call pila_imagenes%agregar_imagen("img_pequena")
       img_pequenas = img_pequenas - 1
     end if
 
       call mylista%actualizar_ventanilla(id_clienteActual,img_pequenas,img_grandes,sizepila)
       call cola_clientes%eliminar_nodo(id_clienteActual)
       call mylista%print_ventanillas()
-      call pila_imagenes%printPila()
+      !call pila_imagenes%printPila()
     
       ! call cola_clientes%print()
 
