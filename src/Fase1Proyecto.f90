@@ -19,6 +19,10 @@ module linkedList
             procedure :: print_dot
             procedure :: printVent
             procedure :: insert
+            procedure :: getIDCliente
+            procedure :: getNombreCliente
+            procedure :: getImgPequenas
+            procedure :: getImgGrande
             ! procedure :: segundaActualizacion
     end type linked_list
 
@@ -212,13 +216,88 @@ subroutine delete_by_position(self, position)
         end do
     end subroutine print_ventanillas
 
-    function ventanillaDisponible(self,idCliente) result (disponible)
+    function getIDCliente(self) result(clienteID)
+        class(linked_list), intent(inout) :: self
+        type(node), pointer :: current
+        integer :: clienteID
+        
+        ! Obtener el nodo actual de la lista enlazada
+        current => self%head
+        
+        ! Si hay un nodo asociado, obtener el ID del cliente asociado
+        if (associated(current)) then
+            clienteID = current%id_Cliente
+        else
+            ! Si no hay un nodo asociado, devolver un valor predeterminado o manejar el caso de error según sea necesario
+            clienteID = 0 ! Por ejemplo, devolver -1 si no hay ningún cliente asociado al nodo actual
+        end if
+    end function getIDCliente
+
+    function getNombreCliente(self) result(nombre)
+        class(linked_list), intent(inout) :: self
+        type(node), pointer :: current
+        character(len=:), allocatable :: nombre
+        
+        ! Inicializar la cadena de nombre
+        nombre = ""
+        
+        ! Obtener el nodo actual de la lista enlazada
+        current => self%head
+        
+        ! Si hay un nodo asociado y tiene un cliente válido, obtener el nombre del cliente
+        if (associated(current) .and. current%estado .eqv. .false.) then
+            nombre = current%nombreCliente
+        else
+            ! Si no hay un nodo asociado o si el cliente asociado al nodo actual está en estado de espera, devolver una cadena vacía o manejar el caso de error según sea necesario
+            ! Por ejemplo, devolver una cadena que indique que no hay cliente asociado o que el cliente está en espera
+            nombre = "--"
+        end if
+    end function getNombreCliente
+
+    function getImgPequenas(self) result(num_img_pequenas)
+        class(linked_list), intent(inout) :: self
+        type(node), pointer :: current
+        integer :: num_img_pequenas
+        
+        ! Inicializar el número de imágenes pequeñas
+        num_img_pequenas = 0
+        
+        ! Obtener el nodo actual de la lista enlazada
+        current => self%head
+        
+        ! Si hay un nodo asociado y tiene un cliente válido, obtener la cantidad de imágenes pequeñas del cliente
+        if (associated(current) .and. current%estado .eqv. .false.) then
+            num_img_pequenas = current%cantidadImg_pequena
+        end if
+    end function getImgPequenas
+    
+    function getImgGrande(self) result(num_img_grandes)
+        class(linked_list), intent(inout) :: self
+        type(node), pointer :: current
+        integer :: num_img_grandes
+        
+        ! Inicializar el número de imágenes grandes
+        num_img_grandes = 0
+        
+        ! Obtener el nodo actual de la lista enlazada
+        current => self%head
+        
+        ! Si hay un nodo asociado y tiene un cliente válido, obtener la cantidad de imágenes grandes del cliente
+        if (associated(current) .and. current%estado .eqv. .false.) then
+            num_img_grandes = current%cantidadImg_grande
+        end if
+    end function getImgGrande
+    
+    
+
+
+    function ventanillaDisponible(self) result (disponible)
         class(linked_list), intent(inout) :: self
         type(node), pointer :: current
         type(node), pointer :: lastNodeReturned => null()
         logical :: disponible
-        integer::idCliente
-        disponible = .true.
+        !integer::idCliente
+        disponible = .false.
 
         if (.not. associated(lastNodeReturned)) then
             current => self%head
@@ -228,8 +307,8 @@ subroutine delete_by_position(self, position)
 
         do while (associated(current))
             ! Verifica si la ventanilla current está ocupada
-            if (idCliente/=0) then
-                disponible = .false.  ! La ventanilla está disponible
+            if (current%estado) then
+                disponible = .true.  ! La ventanilla está disponible
                 exit  ! Sal del bucle
             end if
             current => current%next
@@ -355,9 +434,11 @@ subroutine actualizar_ventanilla(self, id_Cliente, nombre_cliente, cantidad_pequ
             if (current%cantidadImg_grande > 0) then
                 call current%pila_img%append(current%id_Cliente, "img_g")
                 current%cantidadImg_grande = current%cantidadImg_grande - 1
+                current%cantidadImg_pila = current%cantidadImg_pila + 1
             else if (current%cantidadImg_pequena > 0) then
                 call current%pila_img%append(current%id_Cliente, "img_p")
                 current%cantidadImg_pequena = current%cantidadImg_pequena - 1
+                current%cantidadImg_pila = current%cantidadImg_pila + 1
             else if (current%cantidadImg_grande == 0 .and. current%cantidadImg_pequena == 0) then
                 current%id_Cliente = 0
                 current%nombreCliente = "--"
@@ -735,26 +816,20 @@ end subroutine topImgGrande_dot
   function getIndiceCliente(self) result(indice)
     class(cola), intent(inout) :: self
     type(node), pointer :: current
-    type(node), pointer :: lastNodeReturned => null()
     integer :: indice
-    
-    ! Si es la primera llamada o no hay un último nodo devuelto, comenzar desde la cabeza
-    if (.not. associated(lastNodeReturned)) then
-        current => self%head
-    else
-        current => lastNodeReturned%next
-    end if
 
-    ! Si no hay nodo current, significa que se ha alcanzado el final de la lista
-    if (.not. associated(current)) then
-        indice = -1   ! Retorna -1 para indicar que no hay más índices
-        !print *,"No hay clientes"
-    else
-        ! Obtiene el valor del nodo current y establece lastNodeReturned en el nodo current
-        indice = current%id     
-        lastNodeReturned => current
-    end if
+    current => self%head
+
+    do while(associated(current))
+        ! Si hay un nodo actual, devuelve su ID y sale del bucle
+        indice = current%id
+        return
+    end do
+
+    ! Si no se encontró ningún nodo válido, se establece el índice en -1
+    indice = -1
 end function getIndiceCliente
+
 
 
 function getNombreCliente(self) result(nombre)

@@ -197,60 +197,39 @@ subroutine parametros_iniciales()
 
 
 
-
     subroutine pasoUno()
       integer :: id_ventanillaActual, id_clienteActual, img_pequenas, img_grandes
+      logical :: ventanilla_disponible
       character(len=:), allocatable :: nombre_clienteActual
-      
+  
       id_ventanillaActual = mylista%getIndiceVentanilla()
-      if(id_ventanillaActual > 0) then
-        id_clienteActual = cola_clientes%getIndiceCliente()
-        !print *, "id ventanilla actual: ",id_ventanillaActual
-        !print *, "id cliente actual: ",id_clienteActual
-        nombre_clienteActual = cola_clientes%getNombreCliente()
-        !print *, "nombre cliente actual: ",nombre_clienteActual
-        img_pequenas = cola_clientes%getImgPequenas()
-        !print *, "imagenes pequenas actual: ",img_pequenas
-        img_grandes = cola_clientes%getImgGrande()
-        !print *, "imagenes grandes actual: ",img_grandes
-        
-        call mylista%actualizar_ventanilla(id_clienteActual, nombre_clienteActual, img_pequenas, img_grandes)
-        call cola_clientes%eliminar_nodo(id_clienteActual)
-        call cola_clientes%print()
-        call mylista%print_ventanillas()
+      ventanilla_disponible = mylista%ventanillaDisponible()
+  
+      if (id_ventanillaActual > 0 .or. ventanilla_disponible) then
+          ! Hay ventanillas disponibles o no hay ventanillas, pero se puede agregar un cliente de la cola
+          id_clienteActual = cola_clientes%getIndiceCliente()
+          nombre_clienteActual = cola_clientes%getNombreCliente()
+          img_pequenas = cola_clientes%getImgPequenas()
+          img_grandes = cola_clientes%getImgGrande()
+  
+          if (id_clienteActual > 0) then
+              ! Hay un cliente en espera en la cola
+              call mylista%actualizar_ventanilla(id_clienteActual, nombre_clienteActual, img_pequenas, img_grandes)
+              call cola_clientes%eliminar_nodo(id_clienteActual)
+              call cola_clientes%print()
+              call mylista%print_ventanillas()
+          else
+              ! No hay clientes en espera en la cola
+              print *, "No hay clientes en espera en la cola."
+          end if
       else
-
-        call mylista%actualizar_ventanilla(id_clienteActual, nombre_clienteActual, img_pequenas, img_grandes)
-        call cola_clientes%print()
-        call mylista%print_ventanillas()
-      
+          ! Hay ventanillas, pero no están disponibles para asignar clientes
+          ! Mantener al mismo cliente en la ventanilla y no eliminar ningún cliente de la cola
+          call mylista%actualizar_ventanilla(0, "", 0, 0) ! Mantener la ventanilla con los mismos datos actuales
+          call mylista%print_ventanillas()
       end if
-  
-      ! if (id_ventanillaActual < 0) then
-      !     print *, "Espere... no hay ventanillas disponibles."
-      !     !return
-      ! endif
-  
-      ! if (id_clienteActual < 0) then
-      !     print *, "Error: No hay clientes en la cola."
-      !     !return
-      ! endif
-  
-      ! if (img_pequenas < 0) then
-      !     print *, "Ya no hay imágenes pequeñas por procesar"
-      !     !return
-      ! endif
-  
-      
-      !     call mylista%actualizar_ventanilla(id_clienteActual, nombre_clienteActual, img_pequenas, img_grandes)
-      !     ! call mylista%segundaActualizacion(id_clienteActual,img_grandes,img_pequenas)
-      !     call cola_clientes%eliminar_nodo(id_clienteActual)
-
-
-
-      !     call cola_clientes%print()
-      !     call mylista%print_ventanillas()
   end subroutine pasoUno
+  
   
 
 end program main
