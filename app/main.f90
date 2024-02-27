@@ -75,7 +75,7 @@ subroutine parametros_iniciales()
         read*, cantidad_ventanillas
         print *, "----------------"
         do i = 1, cantidad_ventanillas
-            call mylista%agregar_lista(i,0,.true.,0,0,0)
+            call mylista%agregar_lista(i,0," ",.true.,0,0,0)
             call mylista%insert(i,"pendiente")
             ! print *, "ventanillas creada =>>>>>>",i
         end do
@@ -109,6 +109,7 @@ subroutine parametros_iniciales()
 
     subroutine reportes()
     call cola_clientes%topImgPequena_dot(io)
+    call cola_clientes%topImgGrande_dot(io)
     end subroutine reportes
 
 
@@ -140,10 +141,11 @@ subroutine parametros_iniciales()
             read(id, *) id_asInt
             read(img_g, *) img_g_asInt
             read(img_p, *) img_p_asInt
-            total_img = img_g_asInt + img_p_asInt
+            !total_img = img_g_asInt + img_p_asInt
+            total_img = 0
 
             call cola_clientes%push(id_asInt, trim(nombre), img_g_asInt, img_p_asInt,total_img)
-            call cola_clientes%orden_imagenPequena(id_asInt, trim(nombre), img_g_asInt, img_p_asInt)
+            !call cola_clientes%orden_imagenPequena(id_asInt, trim(nombre), img_g_asInt, img_p_asInt)
 
             ! print *, "------------------"
             ! print *, 'ID: ', id
@@ -151,7 +153,7 @@ subroutine parametros_iniciales()
             ! print *, 'img_p: ', img_p
             ! print *, 'img_g: ', img_g
         end do
-        call cola_clientes%print
+        call cola_clientes%print()
         call json%destroy()
     end subroutine readFile
 
@@ -197,45 +199,45 @@ subroutine parametros_iniciales()
 
 
     subroutine pasoUno()
-      integer :: id_ventanillaActual,id_clienteActual,img_pequenas,img_grandes,sizepila
+      integer :: id_ventanillaActual, id_clienteActual, img_pequenas, img_grandes
+      character(len=:), allocatable :: nombre_clienteActual
+      
       id_ventanillaActual = mylista%getIndiceVentanilla()
+      !print *, "id ventanilla actual: ",id_ventanillaActual
       id_clienteActual = cola_clientes%getIndiceCliente()
+      !print *, "id cliente actual: ",id_clienteActual
+      nombre_clienteActual = cola_clientes%getNombreCliente()
+      !print *, "nombre cliente actual: ",nombre_clienteActual
       img_pequenas = cola_clientes%getImgPequenas()
+      !print *, "imagenes pequenas actual: ",img_pequenas
       img_grandes = cola_clientes%getImgGrande()
-      !sizepila = pila_imagenes%tamano_pila()
-
-
+      !print *, "imagenes grandes actual: ",img_grandes
+  
       if (id_ventanillaActual < 0) then
-        print *, "Error: No hay ventanillas disponibles."
-        return
-    endif
+          print *, "Espere... no hay ventanillas disponibles."
+          !return
+      endif
+  
+      if (id_clienteActual < 0) then
+          print *, "Error: No hay clientes en la cola."
+          !return
+      endif
+  
+      if (img_pequenas < 0) then
+          print *, "Ya no hay imágenes pequeñas por procesar"
+          !return
+      endif
+  
+      
+          call mylista%actualizar_ventanilla(id_clienteActual, nombre_clienteActual, img_pequenas, img_grandes)
+          ! call mylista%segundaActualizacion(id_clienteActual,img_grandes,img_pequenas)
+          call cola_clientes%eliminar_nodo(id_clienteActual)
 
-    if (id_clienteActual < 0) then
-        print *, "Error: No hay clientes en la cola."
-        return
-    endif
 
-    if (img_pequenas < 0) then
-      print *, "Ya no hay imagenes pequenas por procesar"
-      return
-  endif
 
-    if (img_grandes > 0) then
-      !call pila_imagenes%agregar_imagen("img_grande")
-      img_grandes = img_grandes - 1
-    else if(img_pequenas > 0)then
-      !call pila_imagenes%agregar_imagen("img_pequena")
-      img_pequenas = img_pequenas - 1
-    end if
-
-      call mylista%actualizar_ventanilla(id_clienteActual,img_pequenas,img_grandes,sizepila)
-      call cola_clientes%eliminar_nodo(id_clienteActual)
-      call mylista%print_ventanillas()
-      !call pila_imagenes%printPila()
-    
-      ! call cola_clientes%print()
-
-    end subroutine pasoUno
-
+          call cola_clientes%print()
+          call mylista%print_ventanillas()
+  end subroutine pasoUno
+  
 
 end program main

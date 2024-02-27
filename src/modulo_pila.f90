@@ -5,19 +5,22 @@ module pila_module
     
     type, public :: pila
     type(node), pointer :: head => null() ! head of the list
+    type(node), pointer :: lastNodeReturned => null()
   
     contains
-        procedure :: agregar_imagen
+        !procedure :: agregar_imagen
         procedure :: printPila
         procedure :: init_pila
         procedure :: tamano_pila
         procedure :: append
+        procedure :: actualizarPila
         !procedure ::print
         !procedure :: eliminar_nodo
     end type pila
 
     type :: node
         character(len=:), allocatable :: imagen
+        integer :: idCliente
         type(node), pointer :: next
     end type node
 
@@ -25,62 +28,99 @@ module pila_module
   
     contains
 
-    subroutine init_pila(self,nodo)
+    subroutine init_pila(self)
         class(pila), intent(inout) :: self
         type(node), pointer :: nodo
         
         
     end subroutine init_pila
   
-    subroutine agregar_imagen(self, imagen)
-        class(pila), intent(inout) :: self
-        character(len=*), intent(in)  :: imagen
+    ! subroutine agregar_imagen(self, imagen)
+    !     class(pila), intent(inout) :: self
+    !     character(len=*), intent(in)  :: imagen
     
-        type(node), pointer :: newNode
+    !     type(node), pointer :: newNode
     
-        ! Crear un nuevo nodo
-        allocate(newNode)
-        newNode%imagen = imagen
-        newNode%next => self%head ! El nuevo nodo apunta al nodo anterior (antiguo head)
+    !     ! Crear un nuevo nodo
+    !     allocate(newNode)
+    !     newNode%imagen = imagen
+    !     newNode%next => self%head ! El nuevo nodo apunta al nodo anterior (antiguo head)
     
-        ! El nuevo nodo se convierte en el nuevo head de la pila
-        self%head => newNode
+    !     ! El nuevo nodo se convierte en el nuevo head de la pila
+    !     self%head => newNode
     
-        !print *, 'pushed:: ', id,nombre,img_g,img_p
-    end subroutine agregar_imagen
+    !     !print *, 'pushed:: ', id,nombre,img_g,img_p
+    ! end subroutine agregar_imagen
   
-    subroutine append(self, imagen)
+    subroutine append(self,idCliente ,imagen)
         class(pila), intent(inout) :: self
         !integer, intent(in) :: imagen
         character(len=*), intent(in):: imagen
+        integer,intent(in) :: idCliente
 
         type(node), pointer :: current
         type(node), pointer :: new
         allocate(new)
 
         new%imagen = imagen
+        new%idCliente = idCliente
 
         if(.not. associated(self%head)) then
             self%head => new
         else
-            current => self%head
-            do while(associated(current%next))
-                current => current%next
-            end do
 
-            current%next => new
+            new%next => self%head
+            self%head => new
+            ! current => self%head
+            ! do while(associated(current%next))
+            !     current => current%next
+            ! end do
+
+            ! current%next => new
         end if
 
     end subroutine append
+
+    subroutine actualizarPila(self,idCliente ,imagen)
+        class(pila), intent(inout) :: self
+        !integer, intent(in) :: imagen
+        character(len=*), intent(in):: imagen
+        integer,intent(in) :: idCliente
+
+        type(node), pointer :: current
+        !type(node), pointer :: new
+
+        current = self%head
+
+        do while (associated(current))
+            current%idCliente = idCliente
+            current%imagen = imagen
+        end do
+
+        current => current%next
+
+    end subroutine actualizarPila
+
+
+
+
+
 
     subroutine printPila(self)
         class(pila), intent(in) :: self
         type(node), pointer :: current
         current => self%head
+        
 
         do while(associated(current))
-            print *, current%imagen, ","
-            current => current%next
+            if (associated(current%next)) then
+                print *,"-------Pila-------"
+                print *,"id cliente: " ,current%idCliente
+                print *,"tipo de imagen: " ,current%imagen
+                current => current%next
+            else
+                exit
+            end if
         end do
     end subroutine printPila
 

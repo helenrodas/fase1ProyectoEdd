@@ -1,44 +1,44 @@
 [
     {
         "id":"1",
-        "nombre":"Andres Lopez",
-        "img_g": "5",
+        "nombre":"Juan Lopez",
+        "img_g": "10",
         "img_p": "1"
     },
     {
         "id":"2",
-        "nombre":"Luis prez",
-        "img_g": "6",
-        "img_p": "4"
-    },
-    {
-        "id":"3",
-        "nombre":"dude Lopez",
-        "img_g": "10",
-        "img_p": "2"
-    },
-    {
-        "id":"4",
-        "nombre":"helen Lopez",
-        "img_g": "8",
-        "img_p": "3"
-    },
-    {
-        "id":"5",
-        "nombre":"Luis Lopez",
-        "img_g": "1",
+        "nombre":"Luis Perez",
+        "img_g": "4",
         "img_p": "9"
     },
     {
+        "id":"3",
+        "nombre":"A",
+        "img_g": "1",
+        "img_p": "3"
+    },
+    {
+        "id":"4",
+        "nombre":"B",
+        "img_g": "7",
+        "img_p": "4"
+    },
+    {
+        "id":"5",
+        "nombre":"C",
+        "img_g": "9",
+        "img_p": "5"
+    },
+    {
         "id":"6",
-        "nombre":"due Lopez",
-        "img_g": "2",
-        "img_p": "2"
+        "nombre":"Daaaa",
+        "img_g": "34",
+        "img_p": "12"
     },
     {
         "id":"7",
-        "nombre":"pex Lopez",
+        "nombre":"eeeeeee",
         "img_g": "9",
-        "img_p": "10"
+        "img_p": "4"
     }
 ]

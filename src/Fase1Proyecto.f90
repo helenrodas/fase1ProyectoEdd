@@ -19,6 +19,7 @@ module linkedList
             procedure :: print_dot
             procedure :: printVent
             procedure :: insert
+            ! procedure :: segundaActualizacion
     end type linked_list
 
 
@@ -26,6 +27,7 @@ module linkedList
         !type(pila) :: pila_img
         integer :: index
         integer :: id_ventanilla, id_cliente, cantidadImg_pila, cantidadImg_pequena, cantidadImg_grande
+        character(len=:), allocatable :: nombreCliente
         logical :: estado
         !type(node), pointer :: next
         type(node), pointer :: next => null()
@@ -34,8 +36,6 @@ module linkedList
     end type node
 
 contains
-
-
 subroutine insert(self,id_ventanilla, tipo_img)
     class(linked_list), intent(inout) :: self
     integer, intent(in) :: id_ventanilla
@@ -50,7 +50,7 @@ subroutine insert(self,id_ventanilla, tipo_img)
         aux%id_ventanilla = id_ventanilla
         self%head => aux
         self%tail => aux
-        call aux%pila_img%append(tipo_img)
+        call aux%pila_img%init_pila()
     else
         if(id_ventanilla < self%head%id_ventanilla) then
             self%head%prev => new
@@ -58,13 +58,13 @@ subroutine insert(self,id_ventanilla, tipo_img)
             self%head => new
 
             new%id_ventanilla = id_ventanilla
-            call new%pila_img%append(tipo_img)
+            call new%pila_img%init_pila()
         else
             aux => self%head
             do while (associated(aux%next))
                 if(id_ventanilla < aux%next%id_ventanilla) then
                     if(id_ventanilla == aux%id_ventanilla) then
-                        call aux%pila_img%append(tipo_img)
+                        call aux%pila_img%init_pila()
                     else
                         new%next => aux%next
                         new%prev => aux
@@ -72,7 +72,7 @@ subroutine insert(self,id_ventanilla, tipo_img)
                         aux%next => new
 
                         new%id_ventanilla = id_ventanilla
-                        call new%pila_img%append(tipo_img)
+                        call new%pila_img%init_pila()
                     end if
                     return
                 end if
@@ -80,14 +80,14 @@ subroutine insert(self,id_ventanilla, tipo_img)
             end do
 
             if(id_ventanilla == aux%id_ventanilla) then
-                call aux%pila_img%append(tipo_img)
+                call aux%pila_img%init_pila()
             else
                 self%tail%next => new
                 new%prev => self%tail
                 self%tail => new
 
                 new%id_ventanilla = id_ventanilla
-                call new%pila_img%append(tipo_img)
+                call new%pila_img%init_pila()
             end if
         end if
     end if
@@ -100,7 +100,8 @@ subroutine printVent(self)
     aux => self%head
 
     do while(associated(aux))
-        print *, 'indice ventanilla: ', aux%id_ventanilla
+        print *, '----------------------------'
+        print *, 'indice ventanilla en pila : ', aux%id_ventanilla
         call aux%pila_img%printPila()
         print *, ""
         aux => aux%next
@@ -108,10 +109,12 @@ subroutine printVent(self)
 end subroutine printVent
 
 
-    subroutine agregar_lista(self, id_ventanilla, id_cliente, estado, cantidadImg_pila, cantidadImg_pequena, cantidadImg_grande)
+    subroutine agregar_lista(self, id_ventanilla, id_cliente, nombreCliente, estado, &
+        cantidadImg_pila, cantidadImg_pequena, cantidadImg_grande)
         class(linked_list), intent(inout) :: self
         integer, intent(in) :: id_ventanilla, id_cliente, cantidadImg_pila, cantidadImg_pequena, cantidadImg_grande
         logical, intent(in) :: estado
+        character(len=*), intent(in) :: nombreCliente
 
         type(node), pointer :: current, newNode
 
@@ -119,6 +122,7 @@ end subroutine printVent
         allocate(newNode)
         newNode%id_ventanilla = id_ventanilla
         newNode%id_cliente = id_cliente
+        newNode%nombreCliente = nombreCliente
         newNode%estado = estado
         newNode%cantidadImg_pila = cantidadImg_pila
         newNode%cantidadImg_pequena = cantidadImg_pequena
@@ -193,6 +197,7 @@ subroutine delete_by_position(self, position)
 
             print *, "id_Ventanilla: ", current%id_ventanilla
             print *, "id_Cliente: ",current%id_cliente
+            print *, "Nombre Cliente: ",current%nombreCliente
             ! print *, "Estado Ventanilla: ",current%estado
             if (current%estado .eqv. .true.) then
                 print *, "Estado Ventanilla: Disponible "
@@ -207,32 +212,32 @@ subroutine delete_by_position(self, position)
         end do
     end subroutine print_ventanillas
 
-        function ventanillaDisponible(self,idCliente) result (disponible)
-            class(linked_list), intent(inout) :: self
-            type(node), pointer :: current
-            type(node), pointer :: lastNodeReturned => null()
-            logical :: disponible
-            integer::idCliente
-            disponible = .true.
+    function ventanillaDisponible(self,idCliente) result (disponible)
+        class(linked_list), intent(inout) :: self
+        type(node), pointer :: current
+        type(node), pointer :: lastNodeReturned => null()
+        logical :: disponible
+        integer::idCliente
+        disponible = .true.
 
-            if (.not. associated(lastNodeReturned)) then
-                current => self%head
-            else
-                current => lastNodeReturned%next
+        if (.not. associated(lastNodeReturned)) then
+            current => self%head
+        else
+            current => lastNodeReturned%next
+        end if
+
+        do while (associated(current))
+            ! Verifica si la ventanilla current está ocupada
+            if (idCliente/=0) then
+                disponible = .false.  ! La ventanilla está disponible
+                exit  ! Sal del bucle
             end if
-
-            do while (associated(current))
-                ! Verifica si la ventanilla current está ocupada
-                if (idCliente/=0) then
-                    disponible = .false.  ! La ventanilla está disponible
-                    exit  ! Sal del bucle
-                end if
-                current => current%next
-            end do
-        end function ventanillaDisponible
+            current => current%next
+        end do
+    end function ventanillaDisponible
 
 
-    function getIndiceVentanilla(self) result(indice)
+function getIndiceVentanilla(self) result(indice)
         class(linked_list), intent(inout) :: self
         type(node), pointer :: current
         type(node), pointer :: lastNodeReturned => null()
@@ -255,45 +260,124 @@ subroutine delete_by_position(self, position)
             indice = current%id_Ventanilla
             lastNodeReturned => current
         end if
-    end function getIndiceVentanilla
+end function getIndiceVentanilla
+
+! subroutine actualizar_ventanilla(self, id_Cliente,nombre_cliente,cantidad_grandes,cantidad_pequenas)
+!     class(linked_list), intent(inout) :: self
+!     integer, intent(in) :: id_Cliente,cantidad_pequenas,cantidad_grandes
+!     type(node), pointer :: current
+!     character(len=*), intent(in) :: nombre_cliente
+!     type(node), pointer :: lastNodeReturned 
+
+!     ! Inicializa lastNodeReturned si es la primera llamada
+!     if (.not. associated(self%lastNodeReturned)) then
+!         self%lastNodeReturned => null()
+!     endif
+
+!     ! Si lastNodeReturned no está asociado, comienza desde el inicio
+!     if (.not. associated(self%lastNodeReturned)) then
+!         current => self%head
+!     else
+!         current => self%lastNodeReturned%next
+!     endif
+
+!     ! Recorre la lista hasta encontrar una ventana disponible
+!     do while (associated(current))
+!         if (current%estado) then
+!             current%id_Cliente = id_Cliente
+!             current%nombreCliente = nombre_cliente
+!             current%estado = .false.
+!             current%cantidadImg_pequena = cantidad_pequenas
+!             current%cantidadImg_grande = cantidad_grandes
+!             current%cantidadImg_pila = 0
+
+!             exit
+!         else
+!             self%lastNodeReturned => current
+!             current => current%next
+!         endif
+!     end do
+
+! end subroutine actualizar_ventanilla
+
+! subroutine segundaActualizacion(self, id_Cliente,cantidad_grandes,cantidad_pequenas)
+!     class(linked_list), intent(inout) :: self
+!     integer, intent(inout) :: id_Cliente,cantidad_pequenas,cantidad_grandes
+!     type(node), pointer :: current
+
+!     current => self%head
+
+!     do while (associated(current))
+!         if (current%estado .eqv. .false.) then
+!             if (cantidad_grandes > 0) then
+!                 call current%pila_img%actualizarPila(id_Cliente, "img_g")
+!                 cantidad_grandes = cantidad_grandes - 1
+!                 current%cantidadImg_grande = cantidad_grandes
+!             else if (cantidad_pequenas > 0) then
+!                 call current%pila_img%actualizarPila(id_Cliente, "img_p")
+!                 cantidad_pequenas = cantidad_pequenas - 1
+!                 current%cantidadImg_pequena = cantidad_pequenas
+!             else if (cantidad_grandes == 0 .and. cantidad_pequenas == 0) then
+!                 current%id_Cliente = 0
+!                 current%nombreCliente = "--"
+!                 current%estado = .true.
+!                 current%cantidadImg_pequena = 0
+!                 current%cantidadImg_grande = 0
+!                 current%cantidadImg_pila = 0
+!             end if
+!             current => current%next
+!         end if
+!         current => current%next
+!     end do
+
+! end subroutine segundaActualizacion
 
 
 
-    subroutine actualizar_ventanilla(self, id_Cliente,cantidad_pequenas,cantidad_grandes,size)
-        class(linked_list), intent(inout) :: self
-        integer, intent(in) :: id_Cliente,cantidad_pequenas,cantidad_grandes,size
-        type(node), pointer :: current
-        type(node), pointer :: lastNodeReturned 
 
-        ! Inicializa lastNodeReturned si es la primera llamada
-        if (.not. associated(self%lastNodeReturned)) then
-            self%lastNodeReturned => null()
-        endif
+subroutine actualizar_ventanilla(self, id_Cliente, nombre_cliente, cantidad_pequenas, cantidad_grandes)
+    class(linked_list), intent(inout) :: self
+    integer, intent(in) :: id_Cliente, cantidad_pequenas, cantidad_grandes
+    character(len=*), intent(in) :: nombre_cliente
+    type(node), pointer :: current
 
-        ! Si lastNodeReturned no está asociado, comienza desde el inicio
-        if (.not. associated(self%lastNodeReturned)) then
-            current => self%head
-        else
-            current => self%lastNodeReturned%next
-        endif
+    current => self%head
 
-        ! Recorre la lista hasta encontrar una ventana disponible
-        do while (associated(current))
-            if (current%estado) then
-                current%id_Cliente = id_Cliente
-                current%estado = .false.
-                current%cantidadImg_pequena = cantidad_pequenas
-                current%cantidadImg_grande = cantidad_grandes
-                current%cantidadImg_pila = size
+    do while (associated(current))
+        if (current%estado) then
+            current%id_Cliente = id_Cliente
+            current%nombreCliente = nombre_cliente
+            current%estado = .false.
+            current%cantidadImg_pequena = cantidad_pequenas
+            current%cantidadImg_grande = cantidad_grandes
+            exit ! Salir del bucle si se actualiza la ventana
+        else if (.not. current%estado) then
+            if (current%cantidadImg_grande > 0) then
+                call current%pila_img%append(current%id_Cliente, "img_g")
+                current%cantidadImg_grande = current%cantidadImg_grande - 1
+            else if (current%cantidadImg_pequena > 0) then
+                call current%pila_img%append(current%id_Cliente, "img_p")
+                current%cantidadImg_pequena = current%cantidadImg_pequena - 1
+            else if (current%cantidadImg_grande == 0 .and. current%cantidadImg_pequena == 0) then
+                current%id_Cliente = 0
+                current%nombreCliente = "--"
+                current%estado = .true.
+                current%cantidadImg_pequena = 0
+                current%cantidadImg_grande = 0
+                current%cantidadImg_pila = 0
+            end if
+        end if
+        current => current%next
+    end do
 
-                exit
-            else
-                self%lastNodeReturned => current
-                current => current%next
-            endif
-        end do
+end subroutine actualizar_ventanilla
 
-    end subroutine actualizar_ventanilla
+
+    
+    
+    
+    
+    
 
         subroutine init_linked_list(self)
             class(linked_list), intent(inout) :: self
@@ -372,6 +456,8 @@ module cola_module
         procedure :: clientes_dot
         procedure :: orden_imagenPequena
         procedure :: topImgPequena_dot
+        procedure :: getNombreCliente
+        procedure :: topImgGrande_dot
       ! Agregamos los procedimientos restantes de la cola
   end type cola
 
@@ -384,13 +470,6 @@ module cola_module
       type(node), pointer :: next
   end type node
 
-!   type :: nodeP
-!         integer :: id
-!         character(len=:),allocatable :: nombre
-!         integer :: img_g
-!         integer :: img_p
-!         type(nodeP),pointer :: next
-!     end type nodeP
 
   contains
 
@@ -457,46 +536,65 @@ subroutine topImgPequena_dot(self, io)
     class(cola), intent(in) :: self
     integer, intent(out) :: io
     character(len=100) :: command
-    character(len=8) :: name
+    character(len=8) :: nombre_nodo
     character(len=:), allocatable :: firsts
     character(len=:), allocatable :: connections
     type(node), pointer :: current
-    integer :: id_counter, index, i,count
+    integer :: index, i, j, min_idx
+    integer :: imgP_array(5) ! Array para almacenar las cantidades de imágenes pequeñas de los primeros 5 nodos
+    integer :: temp_id
 
     current => self%head
     command = "dot -Tpng ./TopImgPequena.dot -o ./TopImgPequena.png"
     io = 1
     index = 0
-
     connections = ""
     firsts = ""
 
     open(newunit=io, file='./TopImgPequena.dot')
     write(io, *) "digraph G {"
-    write(io, *) "  node [shape=record];"
-    write(io, *) "  rankdir=TB"
+    write(io, *) "  node [shape=ellipse];"
+    write(io, *) "  rankdir=TB" ! Cambiar el sentido del rankdir a "top-bottom"
 
-    if (.not. associated(self%head)) then
-        write(io, *) "  EmptyQueue;"
-    else
-        do while (associated(current) .and. count < 5)
-            write(name, '(I5)') index
+    ! Almacenar las cantidades de imágenes pequeñas de los primeros 5 nodos en un array
+    do i = 1, 5
+        imgP_array(i) = current%img_p
+        current => current%next
+    end do
 
-            write(io, *) '"nodo'//trim(name)//'"[label="{ |{', 'ID: ', current%id, &
-                    '\n Nombre: ', current%nombre,'\n IMG_G: ', current%img_g,'\n IMG_P: ', &
-                    current%img_p, '}| }", fillcolor=white, style=filled];'
-
-
-            current => current%next
-            index = index + 1
-            count = count + 1
+    ! Ordenar el array imgP_array en función de la cantidad de imágenes pequeñas (de menor a mayor)
+    do i = 1, 4
+        min_idx = i
+        do j = i + 1, 5
+            if (imgP_array(j) <= imgP_array(min_idx)) then
+                min_idx = j
+            end if
         end do
-    end if
+        ! Intercambiar elementos
+        temp_id = imgP_array(i)
+        imgP_array(i) = imgP_array(min_idx)
+        imgP_array(min_idx) = temp_id
+    end do
+
+    ! Recorrer el array ordenado en orden inverso y escribir los nodos en el archivo DOT
+    current => self%head
+    do i = 5, 1, -1
+        do while (associated(current))
+            if (current%img_p == imgP_array(i)) then
+                write(nombre_nodo, '(I5)') index
+                write(io, *) '"nodo'//trim(nombre_nodo)//'"[label="', 'ID: ', current%id, &
+                    '\n Nombre: ', current%nombre,'\n Img_pequena: ', current%img_p, '", fillcolor=white];'
+                index = index + 1
+                exit ! Salir del bucle interno una vez que se encuentra el nodo correspondiente
+            end if
+            current => current%next
+        end do
+        current => self%head ! Reiniciar el puntero para el siguiente nodo
+    end do
 
     write(io, *) connections
-    write(io, *) "rankdir = LR"
     write(io, *) "}"
-    
+
     close(io)
 
     call execute_command_line(command, exitstat=i)
@@ -506,8 +604,78 @@ subroutine topImgPequena_dot(self, io)
     else
         print *, "Imagen generada satisfactoriamente"
     end if
-
 end subroutine topImgPequena_dot
+
+
+subroutine topImgGrande_dot(self, io)
+    class(cola), intent(in) :: self
+    integer, intent(out) :: io
+    character(len=100) :: command
+    character(len=8) :: nombre_nodo
+    character(len=:), allocatable :: firsts
+    character(len=:), allocatable :: connections
+    type(node), pointer :: current
+    integer ::  index, i, conteo
+    integer, dimension(5) :: imgG_array ! Array para almacenar los IDs de los primeros 5 nodos
+
+    current => self%head
+    command = "dot -Tpng ./TopImgGrande.dot -o ./TopImgGrande.png"
+    io = 1
+    index = 0
+    conteo = 0
+    connections = ""
+    firsts = ""
+
+    open(newunit=io, file='./TopImgGrande.dot')
+    write(io, *) "digraph G {"
+    write(io, *) "  node [shape=ellipse];"
+    write(io, *) "  rankdir=LR"
+
+    ! Set title and background color
+    !write(io, *) "  graph [label=""TopImgPequena"", bgcolor=lightblue];"
+
+    if (.not. associated(self%head)) then
+        write(io, *) "  EmptyQueue;"
+    else
+        ! Almacenar los IDs de los primeros 5 nodos en un array
+        do while (associated(current) .and. conteo < 5)
+            imgG_array(conteo + 1) = current%id
+            current => current%next
+            conteo = conteo + 1
+        end do
+
+        ! Recorrer la lista nuevamente para imprimir los nodos con los IDs almacenados en orden inverso
+        do conteo = 5, 1, -1
+            current => self%head
+            do while (associated(current))
+                if (current%id == imgG_array(conteo)) then
+                    write(nombre_nodo, '(I5)') index
+
+                    write(io, *) '"nodo'//trim(nombre_nodo)//'"[label="', 'ID: ', current%id, &
+                            '\n Nombre: ', current%nombre,'\n Img_Grande: ', current%img_G, '", fillcolor=white];'
+
+                    index = index + 1
+                    exit ! Salir del bucle interno una vez que se encuentra el nodo correspondiente al ID almacenado
+                end if
+                current => current%next
+            end do
+        end do
+    end if
+
+    write(io, *) connections
+    write(io, *) "rankdir = LR"
+    write(io, *) "}"
+
+    close(io)
+
+    call execute_command_line(command, exitstat=i)
+
+    if (i == 1) then
+        print *, "Ocurrió un error"
+    else
+        print *, "Imagen generada satisfactoriamente"
+    end if
+end subroutine topImgGrande_dot
 
 
 
@@ -587,6 +755,27 @@ end subroutine topImgPequena_dot
         lastNodeReturned => current
     end if
 end function getIndiceCliente
+
+
+function getNombreCliente(self) result(nombre)
+    class(cola), intent(inout) :: self
+    type(node), pointer :: current
+    character(len=:), allocatable :: nombre
+    type(node), pointer :: lastNodeReturned => null()
+    
+    if (.not. associated(lastNodeReturned)) then
+        current => self%head
+    else
+        current => lastNodeReturned%next
+    end if
+
+    if (.not. associated(current)) then
+        nombre = " -- "   
+    else
+        nombre = current%nombre 
+        lastNodeReturned => current
+    end if
+end function getNombreCliente
 
 function getImgPequenas(self) result(cantidad)
     class(cola), intent(inout) :: self
