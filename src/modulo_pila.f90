@@ -35,22 +35,6 @@ module pila_module
         
     end subroutine init_pila
   
-    ! subroutine agregar_imagen(self, imagen)
-    !     class(pila), intent(inout) :: self
-    !     character(len=*), intent(in)  :: imagen
-    
-    !     type(node), pointer :: newNode
-    
-    !     ! Crear un nuevo nodo
-    !     allocate(newNode)
-    !     newNode%imagen = imagen
-    !     newNode%next => self%head ! El nuevo nodo apunta al nodo anterior (antiguo head)
-    
-    !     ! El nuevo nodo se convierte en el nuevo head de la pila
-    !     self%head => newNode
-    
-    !     !print *, 'pushed:: ', id,nombre,img_g,img_p
-    ! end subroutine agregar_imagen
   
     subroutine append(self,idCliente ,imagen)
         class(pila), intent(inout) :: self
