@@ -341,78 +341,6 @@ function getIndiceVentanilla(self) result(indice)
         end if
 end function getIndiceVentanilla
 
-! subroutine actualizar_ventanilla(self, id_Cliente,nombre_cliente,cantidad_grandes,cantidad_pequenas)
-!     class(linked_list), intent(inout) :: self
-!     integer, intent(in) :: id_Cliente,cantidad_pequenas,cantidad_grandes
-!     type(node), pointer :: current
-!     character(len=*), intent(in) :: nombre_cliente
-!     type(node), pointer :: lastNodeReturned 
-
-!     ! Inicializa lastNodeReturned si es la primera llamada
-!     if (.not. associated(self%lastNodeReturned)) then
-!         self%lastNodeReturned => null()
-!     endif
-
-!     ! Si lastNodeReturned no está asociado, comienza desde el inicio
-!     if (.not. associated(self%lastNodeReturned)) then
-!         current => self%head
-!     else
-!         current => self%lastNodeReturned%next
-!     endif
-
-!     ! Recorre la lista hasta encontrar una ventana disponible
-!     do while (associated(current))
-!         if (current%estado) then
-!             current%id_Cliente = id_Cliente
-!             current%nombreCliente = nombre_cliente
-!             current%estado = .false.
-!             current%cantidadImg_pequena = cantidad_pequenas
-!             current%cantidadImg_grande = cantidad_grandes
-!             current%cantidadImg_pila = 0
-
-!             exit
-!         else
-!             self%lastNodeReturned => current
-!             current => current%next
-!         endif
-!     end do
-
-! end subroutine actualizar_ventanilla
-
-! subroutine segundaActualizacion(self, id_Cliente,cantidad_grandes,cantidad_pequenas)
-!     class(linked_list), intent(inout) :: self
-!     integer, intent(inout) :: id_Cliente,cantidad_pequenas,cantidad_grandes
-!     type(node), pointer :: current
-
-!     current => self%head
-
-!     do while (associated(current))
-!         if (current%estado .eqv. .false.) then
-!             if (cantidad_grandes > 0) then
-!                 call current%pila_img%actualizarPila(id_Cliente, "img_g")
-!                 cantidad_grandes = cantidad_grandes - 1
-!                 current%cantidadImg_grande = cantidad_grandes
-!             else if (cantidad_pequenas > 0) then
-!                 call current%pila_img%actualizarPila(id_Cliente, "img_p")
-!                 cantidad_pequenas = cantidad_pequenas - 1
-!                 current%cantidadImg_pequena = cantidad_pequenas
-!             else if (cantidad_grandes == 0 .and. cantidad_pequenas == 0) then
-!                 current%id_Cliente = 0
-!                 current%nombreCliente = "--"
-!                 current%estado = .true.
-!                 current%cantidadImg_pequena = 0
-!                 current%cantidadImg_grande = 0
-!                 current%cantidadImg_pila = 0
-!             end if
-!             current => current%next
-!         end if
-!         current => current%next
-!     end do
-
-! end subroutine segundaActualizacion
-
-
-
 
 subroutine actualizar_ventanilla(self, id_Cliente, nombre_cliente, cantidad_pequenas, cantidad_grandes)
     class(linked_list), intent(inout) :: self
@@ -526,6 +454,9 @@ module cola_module
 
   type,public :: cola
   type(node), pointer :: head => null() ! head of the list
+  type(nodeOrdenG), pointer :: head_G => null()
+  type(nodeOrdenP), pointer :: head_P => null()
+
 
   contains
         procedure :: push
@@ -535,10 +466,11 @@ module cola_module
         procedure :: getImgGrande
         procedure :: eliminar_nodo
         procedure :: clientes_dot
-        procedure :: orden_imagenPequena
+        procedure :: agregar_imgP
         procedure :: topImgPequena_dot
         procedure :: getNombreCliente
         procedure :: topImgGrande_dot
+        procedure :: agregar_imgG
       ! Agregamos los procedimientos restantes de la cola
   end type cola
 
@@ -551,31 +483,46 @@ module cola_module
       type(node), pointer :: next
   end type node
 
+  type :: nodeOrdenG
+        integer :: id
+        character(len=:),allocatable :: nombre
+        integer :: img_g
+        integer :: img_p
+        type(nodeOrdenG),pointer :: next
+    end type nodeOrdenG
+
+    type :: nodeOrdenP
+        integer :: id
+        character(len=:),allocatable :: nombre
+        integer :: img_g
+        integer :: img_p
+        type(nodeOrdenP),pointer :: next
+    end type nodeOrdenP
 
   contains
 
-  subroutine orden_imagenPequena(self, id, nombre, img_g, img_p)
+  subroutine agregar_imgP(self, id_c, nombre_c, img_g, img_p)
     class(cola), intent(inout) :: self
-    integer, intent(in) :: id, img_g, img_p
-    character(len=*), intent(in) :: nombre
+    integer, intent(in) :: id_c, img_g, img_p
+    character(len=*), intent(in) :: nombre_c
     
-    type(node), pointer :: current, newNode, prev
+    type(nodeOrdenP), pointer :: current, newNode, prev
     
     ! Crear un nuevo nodo
     allocate(newNode)
-    newNode%id = id
-    newNode%nombre = nombre
+    newNode%id = id_c
+    newNode%nombre = nombre_c
     newNode%img_g = img_g
     newNode%img_p = img_p
     newNode%next => null()
     
-    if (.not. associated(self%head)) then
+    if (.not. associated(self%head_P)) then
         ! La cola está vacía, insertar el nuevo nodo como cabeza
-        self%head => newNode
+        self%head_P => newNode
     else
         ! La cola no está vacía, encontrar la posición de inserción
+        current => self%head_P
         prev => null()
-        current => self%head
         
         do while (associated(current))
             if (img_p < current%img_p) then
@@ -585,11 +532,11 @@ module cola_module
                     prev%next => newNode
                 else
                     ! Nuevo nodo es la nueva cabeza de la cola
-                    self%head => newNode
+                    self%head_P => newNode
                 end if
                 return
             else if (img_p == current%img_p) then
-                ! Si las imágenes pequeñas son iguales, verificar imágenes grandes
+                ! Comprobar para imágenes grandes si son iguales
                 if (img_g > current%img_g) then
                     ! Insertar antes del nodo actual
                     newNode%next => current
@@ -597,7 +544,7 @@ module cola_module
                         prev%next => newNode
                     else
                         ! Nuevo nodo es la nueva cabeza de la cola
-                        self%head => newNode
+                        self%head_P => newNode
                     end if
                     return
                 end if
@@ -610,8 +557,7 @@ module cola_module
         ! Llegamos al final de la cola, insertar el nuevo nodo al final
         prev%next => newNode
     end if
-end subroutine orden_imagenPequena
-
+end subroutine agregar_imgP
 
 subroutine topImgPequena_dot(self, io)
     class(cola), intent(in) :: self
@@ -620,60 +566,56 @@ subroutine topImgPequena_dot(self, io)
     character(len=8) :: nombre_nodo
     character(len=:), allocatable :: firsts
     character(len=:), allocatable :: connections
-    type(node), pointer :: current
-    integer :: index, i, j, min_idx
-    integer :: imgP_array(5) ! Array para almacenar las cantidades de imágenes pequeñas de los primeros 5 nodos
-    integer :: temp_id
+    type(nodeOrdenP), pointer :: current
+    integer ::  index, i, conteo
+    integer, dimension(5) :: id_array ! Array para almacenar los IDs de los primeros 5 nodos
 
-    current => self%head
+    current => self%head_P
     command = "dot -Tpng ./TopImgPequena.dot -o ./TopImgPequena.png"
     io = 1
     index = 0
+    conteo = 0
     connections = ""
     firsts = ""
 
     open(newunit=io, file='./TopImgPequena.dot')
     write(io, *) "digraph G {"
     write(io, *) "  node [shape=ellipse];"
-    write(io, *) "  rankdir=TB" ! Cambiar el sentido del rankdir a "top-bottom"
+    write(io, *) "  rankdir=LR"
 
-    ! Almacenar las cantidades de imágenes pequeñas de los primeros 5 nodos en un array
-    do i = 1, 5
-        imgP_array(i) = current%img_p
-        current => current%next
-    end do
+    ! Set title and background color
+    write(io, *) "  graph [ bgcolor=white];"
 
-    ! Ordenar el array imgP_array en función de la cantidad de imágenes pequeñas (de menor a mayor)
-    do i = 1, 4
-        min_idx = i
-        do j = i + 1, 5
-            if (imgP_array(j) <= imgP_array(min_idx)) then
-                min_idx = j
-            end if
-        end do
-        ! Intercambiar elementos
-        temp_id = imgP_array(i)
-        imgP_array(i) = imgP_array(min_idx)
-        imgP_array(min_idx) = temp_id
-    end do
-
-    ! Recorrer el array ordenado en orden inverso y escribir los nodos en el archivo DOT
-    current => self%head
-    do i = 5, 1, -1
-        do while (associated(current))
-            if (current%img_p == imgP_array(i)) then
-                write(nombre_nodo, '(I5)') index
-                write(io, *) '"nodo'//trim(nombre_nodo)//'"[label="', 'ID: ', current%id, &
-                    '\n Nombre: ', current%nombre,'\n Img_pequena: ', current%img_p, '", fillcolor=white];'
-                index = index + 1
-                exit ! Salir del bucle interno una vez que se encuentra el nodo correspondiente
-            end if
+    if (.not. associated(self%head_P)) then
+        write(io, *) "  EmptyQueue;"
+    else
+        ! Almacenar los IDs de los primeros 5 nodos en un array
+        do while (associated(current) .and. conteo < 5)
+            id_array(conteo + 1) = current%id
             current => current%next
+            conteo = conteo + 1
         end do
-        current => self%head ! Reiniciar el puntero para el siguiente nodo
-    end do
+
+        ! Recorrer la lista nuevamente para imprimir los nodos con los IDs almacenados en orden inverso
+        do conteo = 5, 1, -1
+            current => self%head_P
+            do while (associated(current))
+                if (current%id == id_array(conteo)) then
+                    write(nombre_nodo, '(I5)') index
+
+                    write(io, *) '"nodo'//trim(nombre_nodo)//'"[label="', 'ID: ', current%id, &
+                            '\n Nombre: ', current%nombre,'\n IMG_P: ', current%img_g, '", fillcolor=orange, style=filled];'
+
+                    index = index + 1
+                    exit ! Salir del bucle interno una vez que se encuentra el nodo correspondiente al ID almacenado
+                end if
+                current => current%next
+            end do
+        end do
+    end if
 
     write(io, *) connections
+    write(io, *) "rankdir = LR"
     write(io, *) "}"
 
     close(io)
@@ -688,6 +630,66 @@ subroutine topImgPequena_dot(self, io)
 end subroutine topImgPequena_dot
 
 
+
+
+  subroutine agregar_imgG(self, id_c, nombre_c, img_g, img_p)
+    class(cola), intent(inout) :: self
+    integer, intent(in) :: id_c, img_g, img_p
+    character(len=*), intent(in) :: nombre_c
+    
+    type(nodeOrdenG), pointer :: current, newNode, prev
+    
+    ! Crear un nuevo nodo
+    allocate(newNode)
+    newNode%id = id_c
+    newNode%nombre = nombre_c
+    newNode%img_g = img_g
+    newNode%img_p = img_p
+    newNode%next => null()
+    
+    if (.not. associated(self%head_G)) then
+        ! La cola está vacía, insertar el nuevo nodo como cabeza
+        self%head_G => newNode
+    else
+        ! La cola no está vacía, encontrar la posición de inserción
+        current => self%head_G
+        prev => null()
+        
+        do while (associated(current))
+            if (img_g > current%img_g) then
+                ! Insertar antes del nodo actual
+                newNode%next => current
+                if (associated(prev)) then
+                    prev%next => newNode
+                else
+                    ! Nuevo nodo es la nueva cabeza de la cola
+                    self%head_G => newNode
+                end if
+                return
+            else if (img_g == current%img_g) then
+                ! Comprobar para imágenes pequeñas si son iguales
+                if (img_p < current%img_p) then
+                    ! Insertar antes del nodo actual
+                    newNode%next => current
+                    if (associated(prev)) then
+                        prev%next => newNode
+                    else
+                        ! Nuevo nodo es la nueva cabeza de la cola
+                        self%head_G => newNode
+                    end if
+                    return
+                end if
+            end if
+            
+            prev => current
+            current => current%next
+        end do
+        
+        ! Llegamos al final de la cola, insertar el nuevo nodo al final
+        prev%next => newNode
+    end if
+end subroutine agregar_imgG
+
 subroutine topImgGrande_dot(self, io)
     class(cola), intent(in) :: self
     integer, intent(out) :: io
@@ -695,11 +697,11 @@ subroutine topImgGrande_dot(self, io)
     character(len=8) :: nombre_nodo
     character(len=:), allocatable :: firsts
     character(len=:), allocatable :: connections
-    type(node), pointer :: current
+    type(nodeOrdenG), pointer :: current
     integer ::  index, i, conteo
-    integer, dimension(5) :: imgG_array ! Array para almacenar los IDs de los primeros 5 nodos
+    integer, dimension(5) :: id_array ! Array para almacenar los IDs de los primeros 5 nodos
 
-    current => self%head
+    current => self%head_G
     command = "dot -Tpng ./TopImgGrande.dot -o ./TopImgGrande.png"
     io = 1
     index = 0
@@ -713,27 +715,27 @@ subroutine topImgGrande_dot(self, io)
     write(io, *) "  rankdir=LR"
 
     ! Set title and background color
-    !write(io, *) "  graph [label=""TopImgPequena"", bgcolor=lightblue];"
+    write(io, *) "  graph [ bgcolor=white];"
 
-    if (.not. associated(self%head)) then
+    if (.not. associated(self%head_G)) then
         write(io, *) "  EmptyQueue;"
     else
         ! Almacenar los IDs de los primeros 5 nodos en un array
         do while (associated(current) .and. conteo < 5)
-            imgG_array(conteo + 1) = current%id
+            id_array(conteo + 1) = current%id
             current => current%next
             conteo = conteo + 1
         end do
 
         ! Recorrer la lista nuevamente para imprimir los nodos con los IDs almacenados en orden inverso
         do conteo = 5, 1, -1
-            current => self%head
+            current => self%head_G
             do while (associated(current))
-                if (current%id == imgG_array(conteo)) then
+                if (current%id == id_array(conteo)) then
                     write(nombre_nodo, '(I5)') index
 
                     write(io, *) '"nodo'//trim(nombre_nodo)//'"[label="', 'ID: ', current%id, &
-                            '\n Nombre: ', current%nombre,'\n Img_Grande: ', current%img_G, '", fillcolor=white];'
+                            '\n Nombre: ', current%nombre,'\n IMG_G: ', current%img_g, '", fillcolor=orange, style=filled];'
 
                     index = index + 1
                     exit ! Salir del bucle interno una vez que se encuentra el nodo correspondiente al ID almacenado
@@ -757,6 +759,11 @@ subroutine topImgGrande_dot(self, io)
         print *, "Imagen generada satisfactoriamente"
     end if
 end subroutine topImgGrande_dot
+
+
+  
+
+
 
 
 
@@ -997,52 +1004,3 @@ end subroutine clientes_dot
 
 end module cola_module
 
-
-
-!   subroutine eliminar_nodo(self, id)
-!       class(cola), intent(inout) :: self
-!       integer, intent(in) :: id
-  
-!       type(node), pointer :: current
-!       type(node), pointer :: prev
-  
-!       ! Verificar si la cola está vacía
-!       if (.not. associated(self%head)) then
-!           print *, "Error: La cola está vacía."
-!           return
-!       endif
-  
-!       current => self%head
-!       prev => self%head
-  
-!       do while (associated(current))
-!           if (current%id == id) then
-!               if (associated(prev, current)) then
-!                   self%head => current%next
-!               else
-!                   prev%next => current%next
-!               endif
-!               deallocate(current)
-!               return
-!           endif
-!           prev => current
-!           current => current%next
-!       end do
-  
-!       print *, "Error: Nodo con el ID ", id, " no encontrado."
-!   end subroutine eliminar_nodo
-
-  
-      ! subroutine printPila(self)
-    !     class(pila), intent(in) :: self
-    
-    !     type(node), pointer :: current
-    
-    !     current => self%head
-    
-    !     ! Recorre la lista y imprime los valores
-    !     do while (associated(current))
-    !         print *, "Imagen: ", current%imagen
-    !         current => current%next
-    !     end do
-    ! end subroutine printPila

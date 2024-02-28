@@ -38,7 +38,6 @@ module pila_module
   
     subroutine append(self,idCliente ,imagen)
         class(pila), intent(inout) :: self
-        !integer, intent(in) :: imagen
         character(len=*), intent(in):: imagen
         integer,intent(in) :: idCliente
 
@@ -55,12 +54,6 @@ module pila_module
 
             new%next => self%head
             self%head => new
-            ! current => self%head
-            ! do while(associated(current%next))
-            !     current => current%next
-            ! end do
-
-            ! current%next => new
         end if
 
     end subroutine append

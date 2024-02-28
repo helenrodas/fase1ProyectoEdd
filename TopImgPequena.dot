@@ -1,10 +1,12 @@
  digraph G {
-   node [shape=ellipse];
-   rankdir=TB
- "nodo    0"[label="ID:            2 \n Nombre: Luis Perez\n Img_pequena:            9 ", fillcolor=white];
- "nodo    1"[label="ID:            5 \n Nombre: C\n Img_pequena:            5 ", fillcolor=white];
- "nodo    2"[label="ID:            4 \n Nombre: B\n Img_pequena:            4 ", fillcolor=white];
- "nodo    3"[label="ID:            3 \n Nombre: A\n Img_pequena:            3 ", fillcolor=white];
- "nodo    4"[label="ID:            1 \n Nombre: Juan Lopez\n Img_pequena:            1 ", fillcolor=white];
+   node [shape=record];
+   rankdir=LR
+   graph [ bgcolor=white];
+ "nodo    0"[label="ID:            5 \n Nombre: C\n IMG_P:            9 ", fillcolor=orange, style=filled];
+ "nodo    1"[label="ID:            4 \n Nombre: B\n IMG_P:            7 ", fillcolor=orange, style=filled];
+ "nodo    2"[label="ID:            7 \n Nombre: eeeeeee\n IMG_P:            9 ", fillcolor=orange, style=filled];
+ "nodo    3"[label="ID:            3 \n Nombre: A\n IMG_P:            1 ", fillcolor=orange, style=filled];
+ "nodo    4"[label="ID:            1 \n Nombre: Juan Lopez\n IMG_P:           10 ", fillcolor=orange, style=filled];
  
+ rankdir = LR
  }

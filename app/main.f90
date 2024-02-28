@@ -145,7 +145,8 @@ subroutine parametros_iniciales()
             total_img = 0
 
             call cola_clientes%push(id_asInt, trim(nombre), img_g_asInt, img_p_asInt,total_img)
-            !call cola_clientes%orden_imagenPequena(id_asInt, trim(nombre), img_g_asInt, img_p_asInt)
+            call cola_clientes%agregar_imgG(id_asInt, trim(nombre), img_g_asInt, img_p_asInt)
+            call cola_clientes%agregar_imgP(id_asInt, trim(nombre), img_g_asInt, img_p_asInt)
 
             ! print *, "------------------"
             ! print *, 'ID: ', id
