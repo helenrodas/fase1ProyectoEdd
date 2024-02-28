@@ -18,7 +18,7 @@ program main
   type(json_value), pointer :: listPointer, animalPointer, attributePointer
 
   logical :: found
-  integer :: size, i,cantidad_ventanillas
+  integer :: size, i,cantidad_ventanillas,clienteId_temp
   character(:), allocatable :: id, nombre, img_p, img_g
   io = 1
     do
@@ -36,6 +36,10 @@ program main
         !     call cantidad_ventanillas()
         case(4)
             call reportes()
+            print *, "Ingrese el ID del cliente a buscar: "
+            read*, clienteId_temp
+            call cola_clientes%graficaIdCliente(io,clienteId_temp)
+        print *, "----------------"
         ! case(5)
         !     call estado_memoria_estructuras()
         case(6)

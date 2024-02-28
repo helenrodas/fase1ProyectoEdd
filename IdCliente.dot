@@ -1,0 +1,8 @@
+ digraph G {
+   node [shape=ellipse];
+   rankdir=LR
+   graph [ bgcolor=white];
+ "nodo    2"[label="{ |{ID:            3 \n Nombre: A\n IMG_G:            1 \n IMG_P:            3 }| }", fillcolor=orange, style=filled];
+ 
+ rankdir = LR
+ }

@@ -1,5 +1,5 @@
  digraph G {
-   node [shape=record];
+   node [shape=ellipse];
    rankdir=LR
    graph [ bgcolor=white];
  "nodo    0"[label="ID:            5 \n Nombre: C\n IMG_P:            9 ", fillcolor=orange, style=filled];

@@ -471,6 +471,7 @@ module cola_module
         procedure :: getNombreCliente
         procedure :: topImgGrande_dot
         procedure :: agregar_imgG
+        procedure :: graficaIdCliente
       ! Agregamos los procedimientos restantes de la cola
   end type cola
 
@@ -500,6 +501,72 @@ module cola_module
     end type nodeOrdenP
 
   contains
+
+  subroutine graficaIdCliente(self, io, id)
+        
+    integer, intent(in) :: id
+    class(cola), intent(in) :: self
+    integer, intent(out) :: io
+    character(len=100) :: command
+    character(len=8) :: nombre_nodo
+    character(len=:), allocatable :: firsts
+    character(len=:), allocatable :: connections
+    type(node), pointer :: current
+    integer ::  index, i
+
+    current => self%head
+    command = "dot -Tpng ./IdCliente.dot -o ./IdCliente.png"
+    io = 1
+    index = 0
+
+    connections = ""
+    firsts = ""
+
+    open(newunit=io, file='./IdCliente.dot')
+    write(io, *) "digraph G {"
+    write(io, *) "  node [shape=ellipse];"
+    write(io, *) "  rankdir=LR"
+
+    ! Set title and background color
+    write(io, *) "  graph [ bgcolor=white];"
+
+    if (.not. associated(self%head)) then
+        write(io, *) "  EmptyQueue;"
+    else
+        do while (associated(current))
+            if (current%id == id) then
+                write(nombre_nodo, '(I5)') index
+    
+                write(io, *) '"nodo'//trim(nombre_nodo)//'"[label="', 'ID: ', current%id, &
+                        '\n Nombre: ', current%nombre,'\n IMG_G: ', current%img_g,'\n IMG_P: ', &
+                        current%img_p, '", fillcolor=orange, style=filled];'
+    
+                
+            end if
+            current => current%next
+            index = index + 1
+        end do
+    end if
+
+    write(io, *) connections
+    write(io, *) "rankdir = LR"
+    write(io, *) "}"
+
+    close(io)
+
+    call execute_command_line(command, exitstat=i)
+
+    if (i == 1) then
+        print *, "Ocurrió un error"
+    else
+        print *, "Imagen generada satisfactoriamente"
+    end if
+
+end subroutine graficaIdCliente
+
+
+
+
 
   subroutine agregar_imgP(self, id_c, nombre_c, img_g, img_p)
     class(cola), intent(inout) :: self
