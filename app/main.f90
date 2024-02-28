@@ -29,10 +29,12 @@ program main
         case(1)
             call parametros_iniciales()
         case(2)
-          print *, "Se encuentra en pasos"
-            call pasos()
+          !print *, "Se encuentra en pasos"
+            !call pasos()
+          call pasoUno()
         case(3)
             call pasosMemoria()
+            
         !     call cantidad_ventanillas()
         case(4)
             call reportes()
@@ -109,6 +111,7 @@ subroutine parametros_iniciales()
     subroutine pasosMemoria()
       call mylista%print_dot("listaVentanillas")
       call cola_clientes%clientes_dot(io)
+      call mylista%grafica_pilaImagenes(io)
     end subroutine pasosMemoria
 
     subroutine reportes()

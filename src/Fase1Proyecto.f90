@@ -23,6 +23,7 @@ module linkedList
             procedure :: getNombreCliente
             procedure :: getImgPequenas
             procedure :: getImgGrande
+            procedure :: grafica_pilaImagenes
             ! procedure :: segundaActualizacion
     end type linked_list
 
@@ -40,6 +41,96 @@ module linkedList
     end type node
 
 contains
+
+subroutine grafica_pilaImagenes(self, io)
+    class(linked_list), intent(inout) :: self ! referencia a la lista
+    !character(len=*), intent(in) :: filename ! nombre del archivo
+    class(node), pointer :: current ! puntero al nodo actual
+    integer :: id_ventanilla,i,index
+    integer, intent(out) ::io ! id del nodo
+    character(len=100), allocatable :: command
+    character(:), allocatable :: instru,nodoven
+    character(len=8) :: nombre_nodo , ban, valor
+    logical :: bandera
+    instru = ""
+    nodoven = ""
+    command = "dot -Tpng ./PasosImg.dot -o ./PasosImg.png"
+    ! puntero al nodo actual
+    current => self%head
+    index = 1
+    ! abrir el archivo
+    open(newunit=io, file="PasosImg.dot", status='replace')
+
+    ! escribir el encabezado
+    write(io, *) "digraph G {" ! encabezado del archivo dot
+    write(io, *) "  node [shape=box];"  ! forma de los nodos
+    write(io, *) "  rankdir=TB" ! orientación del grafo
+    write(io, *) ' subgraph cluster{ bgcolor=white'  ! orientación del grafo
+    if ( .not. associated(current))  then ! si la lista está vacía
+        write(io, *) "  EmptyList;" ! escribir un nodo que diga que la lista está vacía
+    else ! si la lista no está vacía
+        ! escribir la arista de la cabeza al primer nodo
+        ! escribir la arista de la cola al último nodo
+
+        do while (associated(current)) ! recorrer la lista
+            
+            id_ventanilla = current%id_ventanilla
+            ! crear el nodo
+            write(valor, '(I5)') id_ventanilla
+            nodoven = '  "Node' // valor 
+            write(io, *) nodoven // '"[label="ventanilla= ', id_ventanilla, '"];'
+            ! escribir las aristas
+            if (associated(current%next)) then
+                write(ban, '(I5)') current%next%id_ventanilla
+                write(io, *)  nodoven // '"-> "Node' // ban // '";' ! arista del nodo actual al siguiente nodo
+            end if
+
+            if( .not.(current%estado)) then
+            write(nombre_nodo, '(I5)') index
+
+            write(io, *) '"nodo'//trim(nombre_nodo)//'c"[label="', 'ID: ', current%id_cliente, &
+                    '\n Nombre: ', current%nombreCliente,'\n IMG_G: ', current%cantidadImg_grande,'\n IMG_P: ', &
+                    current%cantidadImg_pequena, '", fillcolor=orange, style=filled];'
+            
+                write(io, *)'"nodo'//trim(nombre_nodo)//'c" ->   '// nodoven //'"'
+            end if
+
+
+            call current%pila_img%PilaEstaVacia(bandera)
+
+            if(.not. bandera)then
+                
+                call current%pila_img%graficar_pila(instru)
+                instru =  instru // '-> '// nodoven // '"'
+
+                write(io, *) instru
+            end if
+
+
+
+            ! avanzar al siguiente nodo
+            current => current%next
+            index = index + 1
+        end do
+    end if
+    ! escribir el pie del archivo
+    write(io, *) "}}" 
+    ! cerrar el archivo
+    
+    close(io)
+
+    call execute_command_line(command, exitstat=i)
+        
+        if(i == 1) then
+            print *, "Ocurrió un error"
+        else
+            print *, "Grafica de lista ventanillas generada satisfactoriamente"
+        end if
+end subroutine grafica_pilaImagenes
+
+
+
+
 subroutine insert(self,id_ventanilla, tipo_img)
     class(linked_list), intent(inout) :: self
     integer, intent(in) :: id_ventanilla

@@ -14,6 +14,8 @@ module pila_module
         procedure :: tamano_pila
         procedure :: append
         procedure :: actualizarPila
+        procedure :: PilaEstaVacia
+        procedure :: graficar_pila
         !procedure ::print
         !procedure :: eliminar_nodo
     end type pila
@@ -21,12 +23,61 @@ module pila_module
     type :: node
         character(len=:), allocatable :: imagen
         integer :: idCliente
-        type(node), pointer :: next
+        type(node), pointer :: next => null()
+        !type(node), pointer :: head => null()
     end type node
 
   
   
     contains
+
+    subroutine PilaEstaVacia(self, pilaVacia)
+        class(pila), intent(inout) :: self
+        logical :: pilaVacia 
+
+        if(.not. associated(self%head)) then
+            pilaVacia = .true.
+        else
+            pilaVacia = .false.
+        end if    
+    
+        
+    end subroutine PilaEstaVacia
+
+
+    subroutine graficar_pila(self,intrucciones)
+        class(pila), intent(inout) :: self
+        character(:), allocatable :: intrucciones,uniones,nombreNodo
+        character(len=20) :: indice,id_nuevo
+        integer :: index
+        type(node), pointer :: current
+        current => self%head
+        intrucciones = ""
+        uniones = ""
+        nombreNodo = ""
+        index = 1
+        do while(associated(current))
+            write(indice, "(I5)" ) index
+            write(id_nuevo, "(I5)" ) current%idCliente
+            nombreNodo = '"node '// current%imagen // id_nuevo // indice // '"'
+
+            intrucciones = intrucciones // nombreNodo // '[label="' // current%imagen // '"]'
+            if(associated(current%next))then
+                uniones = uniones // nombreNodo // "->"
+            else 
+                uniones = uniones // nombreNodo
+            end if
+            index =  index + 1
+            
+            current => current%next
+        end do
+        intrucciones = intrucciones // uniones
+
+
+        
+    end subroutine graficar_pila
+
+
 
     subroutine init_pila(self)
         class(pila), intent(inout) :: self
