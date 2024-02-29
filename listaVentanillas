@@ -5,4 +5,7 @@ digraph G {
   Node1 -> Node2
 ;
   Node2 [label="ventanilla= 2"];
+  Node2 -> Node3
+;
+  Node3 [label="ventanilla= 3"];
 }

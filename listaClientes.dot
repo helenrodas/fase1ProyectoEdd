@@ -4,8 +4,8 @@
  "nodo    0"[label="{ |{ID:            3 \n Nombre: A\n IMG_G:            1 \n IMG_P:            3 }| }", fillcolor=white, style=filled];
  "nodo    1"[label="{ |{ID:            4 \n Nombre: B\n IMG_G:            7 \n IMG_P:            4 }| }", fillcolor=white, style=filled];
  "nodo    2"[label="{ |{ID:            5 \n Nombre: C\n IMG_G:            9 \n IMG_P:            5 }| }", fillcolor=white, style=filled];
- "nodo    3"[label="{ |{ID:            6 \n Nombre: Daaaa\n IMG_G:           34 \n IMG_P:           12 }| }", fillcolor=white, style=filled];
- "nodo    4"[label="{ |{ID:            7 \n Nombre: eeeeeee\n IMG_G:            9 \n IMG_P:            4 }| }", fillcolor=white, style=filled];
+ "nodo    3"[label="{ |{ID:            6 \n Nombre: Daaaa\n IMG_G:            2 \n IMG_P:            1 }| }", fillcolor=white, style=filled];
+ "nodo    4"[label="{ |{ID:            7 \n Nombre: eeeeeee\n IMG_G:            1 \n IMG_P:            4 }| }", fillcolor=white, style=filled];
  "nodo    0"->"nodo    1"->"nodo    2"->"nodo    3"->"nodo    4"
  rankdir = LR
  }

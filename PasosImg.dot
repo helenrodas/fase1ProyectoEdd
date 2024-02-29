@@ -4,11 +4,12 @@
   subgraph cluster{ bgcolor=white
    "Node    1   "[label="ventanilla=            1 "];
    "Node    1   "-> "Node    2   ";
- "nodo    1c"[label="{ |{ID:            1 \n Nombre: Juan Lopez\n IMG_G:            5 \n IMG_P:            1 }| }", fillcolor=orange, style=filled];
+ "nodo    1c"[label="ID:            1 \n Nombre: Juan Lopez\n IMG_G:            2 \n IMG_P:            1 ", fillcolor=orange, style=filled];
  "nodo    1c" ->     "Node    1   "
- "node img_g    1                   1               "[label="img_g"]"node img_g    1                   2               "[label="img_g"]"node img_g    1                   3               "[label="img_g"]"node img_g    1                   4               "[label="img_g"]"node img_g    1                   5               "[label="img_g"]"node img_g    1                   1               "->"node img_g    1                   2               "->"node img_g    1                   3               "->"node img_g    1                   4               "->"node img_g    1                   5               "->   "Node    1   "
+ "node img_g    1                   1               "[label="img_g"]"node img_g    1                   1               "->   "Node    1   "
    "Node    2   "[label="ventanilla=            2 "];
- "nodo    2c"[label="{ |{ID:            2 \n Nombre: Luis Perez\n IMG_G:            0 \n IMG_P:            9 }| }", fillcolor=orange, style=filled];
+   "Node    2   "-> "Node    3   ";
+ "nodo    2c"[label="ID:            2 \n Nombre: Luis Perez\n IMG_G:            4 \n IMG_P:            2 ", fillcolor=orange, style=filled];
  "nodo    2c" ->     "Node    2   "
- "node img_g    2                   1               "[label="img_g"]"node img_g    2                   2               "[label="img_g"]"node img_g    2                   3               "[label="img_g"]"node img_g    2                   4               "[label="img_g"]"node img_g    2                   1               "->"node img_g    2                   2               "->"node img_g    2                   3               "->"node img_g    2                   4               "->   "Node    2   "
+   "Node    3   "[label="ventanilla=            3 "];
  }}

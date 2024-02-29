@@ -691,17 +691,17 @@ end subroutine img_pasosSistema
 
 end subroutine graficaIdCliente
 
-  subroutine agregar_imgP(self, id_c, nombre_c, img_g, img_p)
+subroutine agregar_imgP(self, id, nombre, img_g, img_p)
     class(cola), intent(inout) :: self
-    integer, intent(in) :: id_c, img_g, img_p
-    character(len=*), intent(in) :: nombre_c
+    integer, intent(in) :: id, img_g, img_p
+    character(len=*), intent(in) :: nombre
     
     type(nodeOrdenP), pointer :: current, newNode, prev
     
     ! Crear un nuevo nodo
     allocate(newNode)
-    newNode%id = id_c
-    newNode%nombre = nombre_c
+    newNode%id = id
+    newNode%nombre = nombre
     newNode%img_g = img_g
     newNode%img_p = img_p
     newNode%next => null()
@@ -711,8 +711,8 @@ end subroutine graficaIdCliente
         self%head_P => newNode
     else
         ! La cola no está vacía, encontrar la posición de inserción
-        current => self%head_P
         prev => null()
+        current => self%head_P
         
         do while (associated(current))
             if (img_p < current%img_p) then
@@ -726,7 +726,7 @@ end subroutine graficaIdCliente
                 end if
                 return
             else if (img_p == current%img_p) then
-                ! Comprobar para imágenes grandes si son iguales
+                ! Si las imágenes pequeñas son iguales, verificar imágenes grandes
                 if (img_g > current%img_g) then
                     ! Insertar antes del nodo actual
                     newNode%next => current
@@ -747,6 +747,7 @@ end subroutine graficaIdCliente
         ! Llegamos al final de la cola, insertar el nuevo nodo al final
         prev%next => newNode
     end if
+
 end subroutine agregar_imgP
 
 subroutine topImgPequena_dot(self, io)

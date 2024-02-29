@@ -3,7 +3,7 @@
         "id":"1",
         "nombre":"Juan Lopez",
         "img_g": "3",
-        "img_p": "1"
+        "img_p": "7"
     },
     {
         "id":"2",
@@ -33,12 +33,12 @@
         "id":"6",
         "nombre":"Daaaa",
         "img_g": "2",
-        "img_p": "1"
+        "img_p": "2"
     },
     {
         "id":"7",
         "nombre":"eeeeeee",
         "img_g": "1",
-        "img_p": "4"
+        "img_p": "1"
     }
 ]
