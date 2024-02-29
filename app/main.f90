@@ -37,13 +37,11 @@ program main
             
         !     call cantidad_ventanillas()
         case(4)
-            call reportes()
-            print *, "Ingrese el ID del cliente a buscar: "
-            read*, clienteId_temp
-            call cola_clientes%graficaIdCliente(io,clienteId_temp)
+          call opciones_reportes()
+            
         print *, "----------------"
-        ! case(5)
-        !     call estado_memoria_estructuras()
+        case(5)
+            call datos_estudiante()
         case(6)
             exit
         case default
@@ -52,6 +50,19 @@ program main
     end do
 
   contains
+
+  subroutine datos_estudiante()
+    print *, "........................................"
+  print *, "         Datos del Estudiante             "
+  print *, ".........................................."
+    print *, "Nombre: Helen Janet Rodas Castro"
+    print *, "Carnet: 202200066"
+    print *, "Primer Semestre 2024"
+    print *, "Lab.Estructura de Datos"
+    print *, "...................................."
+  end subroutine datos_estudiante
+
+
 
 subroutine print_menu()
   print *, "...................................."
@@ -77,6 +88,8 @@ subroutine parametros_iniciales()
     case(1)
       call readFile()
     case(2)
+
+      
       print *, "Ingrese el numero de ventanillas deseadas: "
         read*, cantidad_ventanillas
         print *, "----------------"
@@ -107,6 +120,45 @@ subroutine parametros_iniciales()
       print *, "...................................."
     end subroutine parameters_menu
 
+    subroutine reportes_menu()
+      print *, "..........................................................."
+      print *, "                  Seleccione una opcion                    "
+      print *, "..........................................................."
+      print *, "1. Top 5 de clientes con mayor cantidad de imagenes grandes"
+      print *, "2.Top 5 de clientes con menor cantidad de imagenes pequenas"
+      print *, "3. Informacion del cliente que mas pasos estuvo en el sistema"
+      print *, "4. Buscar Cliente."
+      print *, "5. Regresar Menu Principal."
+      print *, "..........................................................."
+    end subroutine reportes_menu
+
+    subroutine opciones_reportes()
+      integer :: option
+      do
+        call reportes_menu()
+        read(*, *) option
+        
+        select case(option)
+        case(1)
+          call cola_clientes%topImgGrande_dot(io)
+        case(2)
+          call cola_clientes%topImgPequena_dot(io)
+        case(3)
+          call cola_clientes%img_pasosSistema(io)
+        case(4)
+          print *, "Ingrese el ID del cliente a buscar: "
+          read*, clienteId_temp
+          call cola_clientes%graficaIdCliente(io,clienteId_temp)
+        case(5)
+              exit
+            case default
+              print *, "Error!. Seleccione una opcion valida."
+            end select
+          end do
+        end subroutine opciones_reportes
+
+
+
 
     subroutine pasosMemoria()
       call mylista%print_dot("listaVentanillas")
@@ -114,10 +166,7 @@ subroutine parametros_iniciales()
       call mylista%grafica_pilaImagenes(io)
     end subroutine pasosMemoria
 
-    subroutine reportes()
-    call cola_clientes%topImgPequena_dot(io)
-    call cola_clientes%topImgGrande_dot(io)
-    end subroutine reportes
+
 
 
     subroutine readFile()
@@ -228,11 +277,14 @@ subroutine parametros_iniciales()
               call mylista%print_ventanillas()
           else
               ! No hay clientes en espera en la cola
-              print *, "No hay clientes en espera en la cola."
+            call mylista%actualizar_ventanilla(0, "", 0, 0) ! Mantener la ventanilla con los mismos datos actuales
+            call mylista%print_ventanillas()
+            print *, "No hay clientes en espera en la cola."
           end if
       else
           ! Hay ventanillas, pero no están disponibles para asignar clientes
           ! Mantener al mismo cliente en la ventanilla y no eliminar ningún cliente de la cola
+        print *, "Espere, no hay ventanillas disponibles."
           call mylista%actualizar_ventanilla(0, "", 0, 0) ! Mantener la ventanilla con los mismos datos actuales
           call mylista%print_ventanillas()
       end if

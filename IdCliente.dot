@@ -2,7 +2,7 @@
    node [shape=ellipse];
    rankdir=LR
    graph [ bgcolor=white];
- "nodo    2"[label="{ |{ID:            3 \n Nombre: A\n IMG_G:            1 \n IMG_P:            3 }| }", fillcolor=orange, style=filled];
+ "nodo    2"[label="ID:            2 \n Nombre: Luis Perez\n IMG_G:            4 \n IMG_P:            2 ", fillcolor=orange, style=filled];
  
  rankdir = LR
  }

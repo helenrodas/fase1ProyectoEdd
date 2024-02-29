@@ -27,8 +27,6 @@ module pila_module
         !type(node), pointer :: head => null()
     end type node
 
-  
-  
     contains
 
     subroutine PilaEstaVacia(self, pilaVacia)
@@ -73,8 +71,6 @@ module pila_module
         end do
         intrucciones = intrucciones // uniones
 
-
-        
     end subroutine graficar_pila
 
 
@@ -157,13 +153,9 @@ module pila_module
         type(node), pointer :: current
         integer :: tam
         
-        ! Implementa la lógica para calcular el tamaño de la pila aquí
-        ! Por ejemplo, si la pila es una estructura enlazada, recorre la pila y cuenta los elementos
-        
         tam = 0
         
-        ! Aquí deberías colocar el código para recorrer la pila y contar los elementos
-        ! Por ejemplo, si la pila es una lista enlazada:
+        
         do while (associated(current))
             tam = tam + 1
             current => current%next

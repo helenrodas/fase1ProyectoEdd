@@ -2,11 +2,11 @@
    node [shape=ellipse];
    rankdir=LR
    graph [ bgcolor=white];
- "nodo    0"[label="ID:            4 \n Nombre: B\n IMG_G:            7 ", fillcolor=orange, style=filled];
- "nodo    1"[label="ID:            5 \n Nombre: C\n IMG_G:            9 ", fillcolor=orange, style=filled];
- "nodo    2"[label="ID:            7 \n Nombre: eeeeeee\n IMG_G:            9 ", fillcolor=orange, style=filled];
- "nodo    3"[label="ID:            1 \n Nombre: Juan Lopez\n IMG_G:           10 ", fillcolor=orange, style=filled];
- "nodo    4"[label="ID:            6 \n Nombre: Daaaa\n IMG_G:           34 ", fillcolor=orange, style=filled];
+ "nodo    0"[label="ID:            6 \n Nombre: Daaaa\n IMG_G:            2 ", fillcolor=orange, style=filled];
+ "nodo    1"[label="ID:            1 \n Nombre: Juan Lopez\n IMG_G:            3 ", fillcolor=orange, style=filled];
+ "nodo    2"[label="ID:            2 \n Nombre: Luis Perez\n IMG_G:            4 ", fillcolor=orange, style=filled];
+ "nodo    3"[label="ID:            4 \n Nombre: B\n IMG_G:            7 ", fillcolor=orange, style=filled];
+ "nodo    4"[label="ID:            5 \n Nombre: C\n IMG_G:            9 ", fillcolor=orange, style=filled];
  
  rankdir = LR
  }

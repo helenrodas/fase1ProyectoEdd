@@ -2,14 +2,14 @@
     {
         "id":"1",
         "nombre":"Juan Lopez",
-        "img_g": "10",
+        "img_g": "3",
         "img_p": "1"
     },
     {
         "id":"2",
         "nombre":"Luis Perez",
         "img_g": "4",
-        "img_p": "9"
+        "img_p": "2"
     },
     {
         "id":"3",
@@ -32,13 +32,13 @@
     {
         "id":"6",
         "nombre":"Daaaa",
-        "img_g": "34",
-        "img_p": "12"
+        "img_g": "2",
+        "img_p": "1"
     },
     {
         "id":"7",
         "nombre":"eeeeeee",
-        "img_g": "9",
+        "img_g": "1",
         "img_p": "4"
     }
 ]
