@@ -1,12 +1,11 @@
 module pila_module
     implicit none
-    
     private
     
     type, public :: pila
-    type(node), pointer :: head => null() ! head of the list
+    type(node), pointer :: head => null() 
     type(node), pointer :: lastNodeReturned => null()
-  
+
     contains
         !procedure :: agregar_imagen
         procedure :: printPila
@@ -16,8 +15,7 @@ module pila_module
         procedure :: actualizarPila
         procedure :: PilaEstaVacia
         procedure :: graficar_pila
-        !procedure ::print
-        !procedure :: eliminar_nodo
+        procedure :: clearPila
     end type pila
 
     type :: node
@@ -74,14 +72,11 @@ module pila_module
     end subroutine graficar_pila
 
 
-
     subroutine init_pila(self)
         class(pila), intent(inout) :: self
         type(node), pointer :: nodo
         
-        
     end subroutine init_pila
-  
   
     subroutine append(self,idCliente ,imagen)
         class(pila), intent(inout) :: self
@@ -107,12 +102,10 @@ module pila_module
 
     subroutine actualizarPila(self,idCliente ,imagen)
         class(pila), intent(inout) :: self
-        !integer, intent(in) :: imagen
         character(len=*), intent(in):: imagen
         integer,intent(in) :: idCliente
 
         type(node), pointer :: current
-        !type(node), pointer :: new
 
         current = self%head
 
@@ -126,9 +119,21 @@ module pila_module
     end subroutine actualizarPila
 
 
-
-
-
+    subroutine clearPila(self)
+        class(pila), intent(inout) :: self
+            type(node), pointer :: aux
+        
+            do while(associated(self%head))
+                aux => self%head%next
+                deallocate(self%head)
+                if (associated(aux)) then
+                    self%head => aux
+                else
+                    nullify(self%head)
+                end if
+            end do
+        
+    end subroutine clearPila
 
     subroutine printPila(self)
         class(pila), intent(in) :: self
@@ -155,11 +160,11 @@ module pila_module
         
         tam = 0
         
-        
         do while (associated(current))
             tam = tam + 1
             current => current%next
         end do
         
     end function tamano_pila
+
 end module pila_module

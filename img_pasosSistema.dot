@@ -1,8 +1,0 @@
- digraph G {
-   node [shape=record];
-   rankdir=LR
-   graph [ bgcolor=white];
- "nodo    0"[label="{ |{ID:            5 \n Nombre: C\n pasos:    23   }| }", fillcolor=orange, style=filled];
- 
- rankdir = LR
- }

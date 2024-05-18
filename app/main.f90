@@ -2,17 +2,14 @@ program main
   use:: json_module
   use linkedList
   use cola_module
-  !use pila_module
   
   implicit none
   integer :: option,id_asInt,img_g_asInt,img_p_asInt, contador_pasos,total_img,io
   integer :: windowsAmount
   character(len=1) :: dummy_char
   
-  !integer :: option
   type(linked_list) :: mylista
   type(cola) :: cola_clientes
-  !type(pila) :: pila_imagenes
   type(json_file) :: json
   type(json_core) :: jsonc
   type(json_value), pointer :: listPointer, animalPointer, attributePointer
@@ -29,13 +26,10 @@ program main
         case(1)
             call parametros_iniciales()
         case(2)
-          !print *, "Se encuentra en pasos"
-            !call pasos()
           call pasoUno()
         case(3)
             call pasosMemoria()
             
-        !     call cantidad_ventanillas()
         case(4)
           call opciones_reportes()
             
@@ -95,10 +89,8 @@ subroutine parametros_iniciales()
         print *, "----------------"
         do i = 1, cantidad_ventanillas
             call mylista%agregar_lista(i,0," ",.true.,0,0,0)
-            call mylista%insert(i,"pendiente")
-            ! print *, "ventanillas creada =>>>>>>",i
+            call mylista%insert(i)
         end do
-        !call mylista%print_ventanillas()
         call mylista%printVent()
         print *, "----------------"
     case(3)
@@ -157,24 +149,21 @@ subroutine parametros_iniciales()
           end do
         end subroutine opciones_reportes
 
-
-
-
     subroutine pasosMemoria()
-      call mylista%print_dot("listaVentanillas")
       call cola_clientes%clientes_dot(io)
       call mylista%grafica_pilaImagenes(io)
+      call mylista%listaCEspera%listaEspera_dot()
+      call mylista%colaImpresoraG%impresoraGrande_dot()
+      call mylista%colaImpresoraP%impresoraPeque_dot()
+      call mylista%listaAtendidos%clientesAtendidos_dot()
     end subroutine pasosMemoria
 
 
-
-
     subroutine readFile()
-      
         print *, "---------------------------------------"
         print *, "-- Lista Clientes --"
         call json%initialize()
-        call json%load(filename='DatosPrueba.json')
+        call json%load(filename='users.json')
         call json%info('',n_children=size)
         call json%get_core(jsonc)
         call json%get('', listPointer, found)
@@ -197,61 +186,16 @@ subroutine parametros_iniciales()
             read(id, *) id_asInt
             read(img_g, *) img_g_asInt
             read(img_p, *) img_p_asInt
-            !total_img = img_g_asInt + img_p_asInt
             total_img = 0
+            total_img = img_g_asInt + img_p_asInt
 
             call cola_clientes%push(id_asInt, trim(nombre), img_g_asInt, img_p_asInt,total_img)
             call cola_clientes%agregar_imgG(id_asInt, trim(nombre), img_g_asInt, img_p_asInt)
             call cola_clientes%agregar_imgP(id_asInt, trim(nombre), img_g_asInt, img_p_asInt)
-            
-            ! print *, "------------------"
-            ! print *, 'ID: ', id
-            ! print *, 'Nombre: ', nombre
-            ! print *, 'img_p: ', img_p
-            ! print *, 'img_g: ', img_g
         end do
         call cola_clientes%print()
         call json%destroy()
     end subroutine readFile
-
-    subroutine pasos()
-      contador_pasos = 0
-      do
-        call menuTemp()
-        read(*, *) option
-  
-        select case(option)
-        case(1)
-            contador_pasos  = contador_pasos + 1
-            call pasoUno()
-            
-            print *, contador_pasos
-        ! case(2)s
-        !     call pasos()
-        ! case(3)
-        !     call cantidad_ventanillas()
-        ! case(4)
-        !     call ejecutar_paso()
-        ! case(5)
-        !     call estado_memoria_estructuras()
-        case(6)
-            exit
-        case default
-            print *, "Error!. Por favor seleccione una opcion valida."
-        end select
-    end do
-
-    end subroutine pasos
-
-    subroutine menuTemp()
-      print *, "...................................."
-      print *, "         Seleccione una opcion            "
-      print *, "...................................."
-      print *, "1. paso Uno"
-      print *, "...................................."
-    end subroutine menuTemp
-
-
 
 
     subroutine pasoUno()
@@ -273,23 +217,29 @@ subroutine parametros_iniciales()
               ! Hay un cliente en espera en la cola
               call mylista%actualizar_ventanilla(id_clienteActual, nombre_clienteActual, img_pequenas, img_grandes)
               call cola_clientes%eliminar_nodo(id_clienteActual)
-              call cola_clientes%print()
+              ! call cola_clientes%print()
               call mylista%print_ventanillas()
           else
               ! No hay clientes en espera en la cola
-            call mylista%actualizar_ventanilla(0, "", 0, 0) ! Mantener la ventanilla con los mismos datos actuales
-            call mylista%print_ventanillas()
-            print *, "No hay clientes en espera en la cola."
+              call mylista%actualizar_ventanilla(0, "", 0, 0) ! Mantener la ventanilla con los mismos datos actuales
+              call mylista%print_ventanillas()
+              ! print *, "No hay clientes en espera en la cola."
           end if
       else
           ! Hay ventanillas, pero no están disponibles para asignar clientes
           ! Mantener al mismo cliente en la ventanilla y no eliminar ningún cliente de la cola
-        print *, "Espere, no hay ventanillas disponibles."
           call mylista%actualizar_ventanilla(0, "", 0, 0) ! Mantener la ventanilla con los mismos datos actuales
           call mylista%print_ventanillas()
+          call mylista%printClienteTerminado()
+          print *, "......list clientes atendidos......"
+          call mylista%listaAtendidos%printClienteAtendido()
+          print *, "......list clientes en espera......"
+          call mylista%listaCEspera%print_listaEspera()
+          print *, "......list impresora Img GRande.............."
+          call mylista%colaImpresoraG%printImpresoraGrande()
+          print *, "......list impresora Img Pequena.............."
+          call mylista%colaImpresoraP%printImpresoraPeque()
       end if
   end subroutine pasoUno
-  
-  
 
 end program main
